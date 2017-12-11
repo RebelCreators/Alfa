@@ -6,7 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "afimport": "git+https://github.com/RebelCreators/AFImport.git#1.0.3",
+    "afimport": "git+https://github.com/RebelCreators/AFImport.git#1.0.4",
     "alfa": "file:../Modules/Alfa",
     "debug": "2.2.x",
     "express": "^4.13.4"

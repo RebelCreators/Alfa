@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "afimport": "https://github.com/RebelCreators/AFImport.git#1.0.3",
+    "afimport": "https://github.com/RebelCreators/AFImport.git#1.0.4",
     "aws-sdk": "~2.6.12",
     "bcrypt-nodejs": "~0.0.3",
     "bluebird": "^3.4.6",
