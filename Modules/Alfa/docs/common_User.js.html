@@ -1,4 +1,32 @@
-var afimport = require("afimport");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: common/User.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: common/User.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>var afimport = require("afimport");
 var Shared = afimport.require("shared");
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
@@ -156,7 +184,7 @@ UserSchema.methods.validateUser = function () {
 
         if (!self.userName) {
             message = "Username not provided";
-        } else if (!self.password || self.password.length < UserModel.minimumPasswordLength) {
+        } else if (!self.password || self.password.length &lt; UserModel.minimumPasswordLength) {
             message = "password not provided";
         }
 
@@ -174,7 +202,7 @@ UserSchema.methods.validateUser = function () {
  * @memberof module:models/UserModel~UserModel
  * @instance
  *
- * @return {Promise.<UserModel, Error>}
+ * @return {Promise.&lt;UserModel, Error>}
  */
 UserSchema.methods.saveNewUser = function () {
     var self = this;
@@ -199,7 +227,7 @@ UserSchema.methods.saveNewUser = function () {
  *
  * @param {string} username
  * @param {string} password
- * @return {Promise.<UserModel, Error>}
+ * @return {Promise.&lt;UserModel, Error>}
  */
 UserSchema.statics.getUser = function (username, password) {
     var self = this;
@@ -244,7 +272,7 @@ UserSchema.statics.getUser$ = function (username, password, callback) {
  * @memberof module:models/UserModel~UserModel
  *
  * @param password
- * @return {Promise.<string, Error>}
+ * @return {Promise.&lt;string, Error>}
  */
 UserSchema.statics.hashPassword = function (password) {
     return new Promise(function (resolve, reject) {
@@ -264,7 +292,7 @@ UserSchema.statics.hashPassword = function (password) {
  * @memberof module:models/UserModel~UserModel
  *
  * @param {string} userId
- * @return {Promise.<UserModel, Error>}
+ * @return {Promise.&lt;UserModel, Error>}
  */
 UserSchema.statics.getUserById = function (userId) {
     return new Promise(function (resolve, reject) {
@@ -282,8 +310,8 @@ UserSchema.statics.getUserById = function (userId) {
  * @function getUserByIds
  * @memberof module:models/UserModel~UserModel
  *
- * @param {Array.<string>} userIds
- * @return {Promise.<Array.<UserModel>, Error>}
+ * @param {Array.&lt;string>} userIds
+ * @return {Promise.&lt;Array.&lt;UserModel>, Error>}
  */
 UserSchema.statics.getUsersByIds = function (userIds) {
     return new Promise(function (resolve, reject) {
@@ -302,7 +330,7 @@ UserSchema.statics.getUsersByIds = function (userIds) {
  * @memberof module:models/UserModel~UserModel
  *
  * @param {string} userName
- * @return {Promise.<UserModel, Error>}
+ * @return {Promise.&lt;UserModel, Error>}
  */
 UserSchema.statics.getUserByUserName = function (userName) {
     return new Promise(function (resolve, reject) {
@@ -323,8 +351,8 @@ UserSchema.statics.getUserByUserName = function (userName) {
  * @function getUserByUserNames
  * @memberof module:models/UserModel~UserModel
  *
- * @param {Array.<string>} userNames
- * @return {Promise.<Array.<UserModel>, Error>}
+ * @param {Array.&lt;string>} userNames
+ * @return {Promise.&lt;Array.&lt;UserModel>, Error>}
  */
 UserSchema.statics.getUsersByUserNames = function (userNames) {
     return new Promise(function (resolve, reject) {
@@ -343,7 +371,7 @@ UserSchema.statics.getUsersByUserNames = function (userNames) {
  * @memberof module:models/UserModel~UserModel
  *
  * @param {Object} json
- * @return {Promise.<UserModel, Error>}
+ * @return {Promise.&lt;UserModel, Error>}
  */
 UserSchema.statics.updateUser = function (json) {
     return new Promise(function (resolve, reject) {
@@ -365,3 +393,26 @@ mongoose.model('UserModel', UserSchema);
 
 var UserModel = mongoose.model('UserModel');
 module.exports = UserModel;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-models_DeviceModel.html">models/DeviceModel</a></li><li><a href="module-models_DialogModel.html">models/DialogModel</a></li><li><a href="module-models_DialogTipModel.html">models/DialogTipModel</a></li><li><a href="module-models_LocationModel.html">models/LocationModel</a></li><li><a href="module-models_MessageModel.html">models/MessageModel</a></li><li><a href="module-models_UserModel.html">models/UserModel</a></li></ul><h3>Classes</h3><ul><li><a href="AccessTokenModel.html">AccessTokenModel</a></li><li><a href="module-models_DeviceModel-DeviceModel.html">DeviceModel</a></li><li><a href="module-models_DialogModel-DialogModel.html">DialogModel</a></li><li><a href="module-models_DialogModel-PermissionModel.html">PermissionModel</a></li><li><a href="module-models_DialogTipModel-DialogTipModel.html">DialogTipModel</a></li><li><a href="module-models_LocationModel-LocationModel.html">LocationModel</a></li><li><a href="module-models_MessageModel-MessageModel.html">MessageModel</a></li><li><a href="module-models_MessageModel-PayloadModel.html">PayloadModel</a></li><li><a href="module-models_UserModel-UserModel.html">UserModel</a></li><li><a href="RefreshTokenModel.html">RefreshTokenModel</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AccessTokenSchema">AccessTokenSchema</a></li><li><a href="global.html#connect">connect</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#RefreshTokenSchema">RefreshTokenSchema</a></li><li><a href="global.html#send">send</a></li><li><a href="global.html#sendMessageToDevice">sendMessageToDevice</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Dec 12 2017 01:33:40 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

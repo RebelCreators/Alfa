@@ -5,11 +5,28 @@ var Schema = mongoose.Schema;
 var _ = require('underscore');
 
 /**
+ * The data-layer
+ * @module models/DialogTipModel
+ */
+
+/**
  *
- * @type {DialogTipSchema}
+ * @constructor DialogTipModel
  */
 var DialogTipSchema = new Schema({
+    /**
+     * @memberof module:models/DialogTipModel~DialogTipModel
+     * @instance
+     *
+     * @type {MessageModel}
+     */
     message: {type: mongoose.Schema.Types.ObjectId, ref: 'message', required: true},
+    /**
+     * @memberof module:models/DialogTipModel~DialogTipModel
+     * @instance
+     *
+     * @type {string}
+     */
     iden: {type: String, required: true, unique: true}
 });
 
@@ -17,6 +34,8 @@ var DialogTipSchema = new Schema({
 //*************************** Static Methods
 
 /**
+ * @function messageTipForDialog
+ * @memberof module:models/DialogTipModel~DialogTipModel
  *
  * @param {string} dialogId
  * @param {string} userId
@@ -34,6 +53,9 @@ DialogTipSchema.statics.messageTipForDialog = function (dialogId, userId) {
 };
 
 /**
+ *
+ * @function setTipForDialog
+ * @memberof module:models/DialogTipModel~DialogTipModel
  *
  * @param {string} dialogId
  * @param {string} messageId
@@ -57,8 +79,5 @@ DialogTipSchema.statics.setTipForDialog = function (dialogId, messageId, userId)
 
 mongoose.model('DialogTipModel', DialogTipSchema);
 
-/**
- * @constructor
- */
 var DialogTipModel = mongoose.model('DialogTipModel');
 module.exports = DialogTipModel;
