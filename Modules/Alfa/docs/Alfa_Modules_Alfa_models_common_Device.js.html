@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Alfa/Modules/Alfa/models/common/Device.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Alfa/Modules/Alfa/models/common/Device.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>var afimport = require("afimport");
+var Shared = afimport.require("shared");
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+/**
+ * The data-layer
+ * @module models/DeviceModel
+ */
+
+/**
+ *
+ * @constructor DeviceModel
+ */
+var DeviceSchema = new Schema({
+        /**
+         * @memberof module:models/DeviceModel~DeviceModel
+         * @instance
+         *
+         * @type {UserModel}
+         */
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', required: true},
+        /**
+         * @memberof module:models/DeviceModel~DeviceModel
+         * @instance
+         *
+         * @type {string}
+         */
+        deviceToken: {type: String, unique: true, required: true},
+        /**
+         * @memberof module:models/DeviceModel~DeviceModel
+         * @instance
+         *
+         * @type {string}
+         */
+        apnsToken: String,
+        /**
+         * @memberof module:models/DeviceModel~DeviceModel
+         * @instance
+         *
+         * @default Date.now
+         *
+         * @type {Date}
+         */
+        date: {type: Date, default: Date.now, required: true},
+        /**
+         * @memberof module:models/DeviceModel~DeviceModel
+         * @instance
+         *
+         * @type {string}
+         */
+        clientId: {type: String}
+    },
+    {
+        toJSON:
+            {
+                transform: function (doc, ret) {
+                    delete  ret._id;
+                    delete ret.user;
+                    delete ret.date;
+                    delete ret.clientId;
+                }
+            }
+    });
+
+//*********************************************************************************
+//*************************** JSON Methods
+
+/**
+ *
+ * @function fromPublicJSON
+ * @memberof module:models/DeviceModel~DeviceModel
+ *
+ * @param {object} json
+ * @return {DeviceModel}
+ */
+DeviceSchema.statics.fromPublicJSON = function (json) {
+    delete  json._id;
+    delete json.user;
+    delete json.date;
+    delete json.clientId;
+    var mapped = Shared.caseInsensitiveMap(DeviceSchema.obj, json)
+
+    return new DeviceModel(mapped);
+};
+
+//*********************************************************************************
+//*************************** Public Methods
+
+/**
+ *
+ * @function devicesForUser
+ * @memberof module:models/DeviceModel~DeviceModel
+ * @instance
+ *
+ * @param {UserModel} user
+ * @return {Promise.&lt;Array.&lt;DeviceModel>, Error>}
+ */
+DeviceSchema.methods.devicesForUser = function (user) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var query = {user: user};
+        DeviceModel.find(query).populate("user").exec(function (err, objs) {
+            if (err) return reject(err);
+            resolve(objs);
+        });
+    });
+};
+
+/**
+ *
+ * @function updateDevice
+ * @memberof module:models/DeviceModel~DeviceModel
+ * @instance
+ *
+ * @param {UserModel} user
+ * @return {Promise.&lt;DeviceModel, Error>}
+ */
+DeviceSchema.methods.updateDevice = function (currentUser) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var query = {deviceToken: self.deviceToken};
+        var update = {
+            user: currentUser,
+            deviceToken: self.deviceToken,
+            apnsToken: self.apnsToken,
+            clientId: self.clientId,
+            $setOnInsert: {
+                date: new Date()
+            }
+        };
+        DeviceModel.findOneAndUpdate(query, update, {upsert: true, new: true}, function (err, obj) {
+            if (err) return reject(err);
+            resolve();
+        });
+    });
+};
+
+//*********************************************************************************
+//*************************** Static Methods
+
+/**
+ *
+ * @function devicesForUsers
+ * @memberof module:models/DeviceModel~DeviceModel
+ *
+ * @param {Array.&lt;UserModel>} user
+ * @return {Promise.&lt;Array.&lt;DeviceModel>, Error>}
+ */
+DeviceSchema.statics.devicesForUsers = function (users) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var query = {user: {$in: users}};
+        DeviceModel.find(query).populate("user").exec(function (err, objs) {
+            if (err) return reject(err);
+            resolve(objs);
+        });
+    });
+};
+
+/**
+ *
+ * @function iterateDevices
+ * @memberof module:models/DeviceModel~DeviceModel
+ *
+ * @param {Array.&lt;DeviceModel>} devices
+ * @param {Function} iterate
+ */
+DeviceSchema.statics.iterateDevices = function (devices, iterate) {
+    var count = devices.length;
+    Shared.asyncForEach(devices, iterate);
+};
+
+/**
+ *
+ * @function removeDevice
+ * @memberof module:models/DeviceModel~DeviceModel
+ *
+ * @param {UserModel} currentUser
+ * @param {string} deviceToken
+ * @return {Promise}
+ */
+DeviceSchema.statics.removeDevice = function (currentUser, deviceToken) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var query = {deviceToken: deviceToken, user: currentUser._id};
+        DeviceModel.remove(query, function (err) {
+            if (err) return reject(err);
+            resolve();
+        });
+    });
+};
+
+/**
+ *
+ * @function deviceWithToken
+ * @memberof module:models/DeviceModel~DeviceModel
+ *
+ * @param {string} deviceToken
+ * @return {Promise.&lt;DeviceModel, Error>}
+ */
+DeviceSchema.statics.deviceWithToken = function (deviceToken) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var query = {deviceToken: deviceToken};
+        DeviceModel.findOne(query).populate("user").exec(function (err, obj) {
+            if (err) return reject(err);
+            resolve(obj);
+        });
+    });
+};
+
+mongoose.model('DeviceModel', DeviceSchema);
+
+var DeviceModel = mongoose.model('DeviceModel');
+module.exports = DeviceModel;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-afimport.html">afimport</a></li><li><a href="module-models_DeviceModel.html">models/DeviceModel</a></li><li><a href="module-models_DialogModel.html">models/DialogModel</a></li><li><a href="module-models_DialogTipModel.html">models/DialogTipModel</a></li><li><a href="module-models_LocationModel.html">models/LocationModel</a></li><li><a href="module-models_MessageModel.html">models/MessageModel</a></li><li><a href="module-models_UserModel.html">models/UserModel</a></li><li><a href="module-Router_Alfa.html">Router/Alfa</a></li></ul><h3>Classes</h3><ul><li><a href="AccessTokenModel.html">AccessTokenModel</a></li><li><a href="module-afimport-AFImortModule.html">AFImortModule</a></li><li><a href="module-models_DeviceModel-DeviceModel.html">DeviceModel</a></li><li><a href="module-models_DialogModel-DialogModel.html">DialogModel</a></li><li><a href="module-models_DialogModel-PermissionModel.html">PermissionModel</a></li><li><a href="module-models_DialogTipModel-DialogTipModel.html">DialogTipModel</a></li><li><a href="module-models_LocationModel-LocationModel.html">LocationModel</a></li><li><a href="module-models_MessageModel-MessageModel.html">MessageModel</a></li><li><a href="module-models_MessageModel-PayloadModel.html">PayloadModel</a></li><li><a href="module-models_UserModel-UserModel.html">UserModel</a></li><li><a href="RefreshTokenModel.html">RefreshTokenModel</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AccessTokenSchema">AccessTokenSchema</a></li><li><a href="global.html#connect">connect</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#RefreshTokenSchema">RefreshTokenSchema</a></li><li><a href="global.html#send">send</a></li><li><a href="global.html#sendMessageToDevice">sendMessageToDevice</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Dec 12 2017 02:49:07 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

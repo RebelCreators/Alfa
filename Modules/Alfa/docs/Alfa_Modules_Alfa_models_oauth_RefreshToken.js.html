@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: RefreshTokenModel</title>
+    <title>JSDoc: Source: Alfa/Modules/Alfa/models/oauth/RefreshToken.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,131 +17,87 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: RefreshTokenModel</h1>
+    <h1 class="page-title">Source: Alfa/Modules/Alfa/models/oauth/RefreshToken.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>RefreshTokenModel<span class="signature">()</span><span class="type-signature"></span></h2>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-    
-
-    
-    <h4 class="name" id="RefreshTokenModel"><span class="type-signature"></span>new RefreshTokenModel<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Alfa_Modules_Alfa_models_oauth_RefreshToken.js.html">Alfa/Modules/Alfa/models/oauth/RefreshToken.js</a>, <a href="Alfa_Modules_Alfa_models_oauth_RefreshToken.js.html#line69">line 69</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
+/**
+ * @ref oauth2.0
+ */
+
+/**
+ *
+ * @type {RefreshTokenSchema}
+ */
+var RefreshTokenSchema = new Schema({
+    token: String,
+    clientId: String,
+    expires: Date,
+    user: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel'}
+});
+
+/**
+ *
+ * @param refreshToken
+ * @param clientId
+ * @param expires
+ * @param user
+ * @param callback
+ */
+RefreshTokenSchema.statics.saveRefreshToken = function (refreshToken, clientId, expires, user, callback) {
+    var token = {token: refreshToken, clientId: clientId, expires: expires, user: user._id}
+    RefreshTokenModel.findOneAndUpdate({token: refreshToken}, token, {upsert: true, new: true}, function (err, token) {
+        if (err) return callback(err);
+        if (!token) return callback(new Error("Error Saving Token"));
+
+        console.log("Updated the refreshToken " + token.token);
+        callback(null);
+    });
+};
+
+/**
+ *
+ * @param refreshToken
+ * @param callback
+ */
+RefreshTokenSchema.statics.revokeRefreshToken = function (refreshToken, callback) {
+    var token = {token: refreshToken};
+    RefreshTokenModel.remove(token, function (err) {
+        if (err) return callback(err);
+
+        callback(null);
+    });
+};
+
+/**
+ *
+ * @param refreshToken
+ * @param callback
+ */
+RefreshTokenSchema.statics.getRefreshToken = function (refreshToken, callback) {
+    RefreshTokenModel.findOne({'token': refreshToken}).populate('user').exec(function (err, refreshToken) {
+        if (err) return callback(err, null);
+        callback(null, refreshToken);
+    });
+};
+
+mongoose.model('RefreshToken', RefreshTokenSchema);
+
+/**
+ * @constructor
+ */
+var RefreshTokenModel = mongoose.model('RefreshToken');
+module.exports = RefreshTokenModel;</code></pre>
+        </article>
+    </section>
 
 
 
