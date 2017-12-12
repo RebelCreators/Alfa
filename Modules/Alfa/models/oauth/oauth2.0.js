@@ -5,6 +5,10 @@ var User = afimport.require("User");
 var AccessToken = afimport.require("AccessToken");
 var RefreshToken = afimport.require("RefreshToken");
 
+/**
+ * @ref oauth2.0
+ */
+
 module.exports.getUser = User.getUser$;
 
 module.exports.getClient = function (clientId, clientSecret, callback) {
@@ -15,7 +19,7 @@ module.exports.getClient = function (clientId, clientSecret, callback) {
     var error = new Error("Unauthorized");
     error.status = 401;
     callback(error, null);
-}
+};
 
 module.exports.grantTypeAllowed = function (clientId, grantType, callback) {
     if (grantType.toLowerCase() == "password" || grantType.toLowerCase() == "refresh_token") {
@@ -23,7 +27,7 @@ module.exports.grantTypeAllowed = function (clientId, grantType, callback) {
     }
 
     callback(null, false);
-}
+};
 
 module.exports.saveRefreshToken = RefreshToken.saveRefreshToken;
 module.exports.revokeRefreshToken = RefreshToken.revokeRefreshToken;

@@ -13,6 +13,11 @@ router.all('*', app.oauth.authorise(), function (req, res, next) {
     next();
 });
 
+/**
+ * POST /upload
+ * files {max = 5}
+ * response {Array.<string>}
+ */
 router.post('/upload', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var filesObject = req.files;
@@ -29,7 +34,7 @@ router.post('/upload', app.oauth.authorise(), function (req, res, next) {
     for (var i = 0; i < maxUploadLimit; i++) {
         var file = filesObject["file" + i];
         if (!file) {
-          break;
+            break;
         }
         files.push(file);
     }
@@ -55,7 +60,7 @@ router.post('/upload', app.oauth.authorise(), function (req, res, next) {
             }
         })();
     }
-    
+
     promise.then(function () {
         res.json(response);
     }).catch(function (err) {
@@ -63,12 +68,22 @@ router.post('/upload', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * GET /:fileId/download
+ * response {Data}
+ */
 router.get('/:fileId/download', function (req, res, next) {
     var fileId = req.params.fileId;
     var path = fileId;
     downloadFile(path, res, next);
 });
 
+/**
+ * @private
+ * @param filePath
+ * @param userId
+ * @return {Promise}
+ */
 var uploadFile = function (filePath, userId) {
     return new Promise(function (resolve, reject) {
         fs.readFile(filePath, function (err, data) {
@@ -90,6 +105,12 @@ var uploadFile = function (filePath, userId) {
     });
 };
 
+/**
+ * @private
+ * @param fileId
+ * @param res
+ * @param next
+ */
 var downloadFile = function (fileId, res, next) {
     s3.S3.getObject({
         Bucket: AWS_BUCKET,

@@ -9,6 +9,11 @@ var DialogModel = afimport.require("Dialog");
 var MessageModel = afimport.require("Message");
 var Socket = afimport.require("Socket");
 
+/**
+ * PUT /new
+ * body: DialogModel
+ * response {DialogModel}
+ */
 router.put('/new', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -18,12 +23,17 @@ router.put('/new', app.oauth.authorise(), function (req, res, next) {
             res.statusCode = 500;
             throw new Error("Error Saving");
         }
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
 });
 
+/**
+ * GET /:dialogId/id
+ * query: permissions {PremissionsModel}
+ * response {DialogModel}
+ */
 router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var dialogId = req.params.dialogId;
@@ -32,12 +42,18 @@ router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
     DialogModel.dialogWithId(dialogId, permissions, currentUser).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
-        res.json(dialog ? dialog.toPublicJSON() : null);
+        res.json(dialog ? dialog.toJSON() : null);
     }).catch(function (error) {
         next(error);
     });
 });
 
+/**
+ * POST /:dialogId/id
+ * body: permissions {PremissionsModel}
+ * body: dialogIds {Array.<string>}
+ * response {DialogModel}
+ */
 router.post('/ids', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var permissions = Object.assign({}, req.body.permissions);
@@ -51,7 +67,7 @@ router.post('/ids', app.oauth.authorise(), function (req, res, next) {
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
             var dialog = dialogs[i];
-            dialogsOutput.push(dialog.toPublicJSON());
+            dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
     }).catch(function (error) {
@@ -59,6 +75,11 @@ router.post('/ids', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * GET /find/users
+ * query: permissions {PremissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var permissions = Object.assign({}, req.query.permissions);
@@ -72,7 +93,7 @@ router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
             var dialog = dialogs[i];
-            dialogsOutput.push(dialog.toPublicJSON());
+            dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
     }).catch(function (error) {
@@ -80,7 +101,15 @@ router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
-
+/**
+ * GET /messages/:dialogId
+ * query: permissions {PremissionsModel}
+ * query: offset {number}
+ * query: limit {number}
+ * query: asc {boolean}
+ * query: date {string}
+ * response {Array.<MessageModel>}
+ */
 router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var dialogId = req.params.dialogId;
@@ -97,7 +126,7 @@ router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, nex
     DialogModel.messages(date, offset, limit, asc, dialogId, permissions, currentUser).then(function (messages) {
         var output = [];
         for (var i = 0; i < messages.length; i++) {
-            var message = messages[i].toPublicJSON();
+            var message = messages[i].toJSON();
             output.push(message);
         }
         res.json(output);
@@ -106,6 +135,12 @@ router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, nex
     });
 });
 
+/**
+ * GET /messages/:dialogId
+ * query: toDate {string}
+ * query: fromDate {string}
+ * response {Array.<MessageModel>}
+ */
 router.get('/between/messages', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var fromDate = null;
@@ -128,7 +163,7 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
     DialogModel.messagesBetweenDates(fromDate, toDate, asc, currentUser).then(function (messages) {
         var output = [];
         for (var i = 0; i < messages.length; i++) {
-            var message = messages[i].toPublicJSON();
+            var message = messages[i].toJSON();
             output.push(message);
         }
         res.json(output);
@@ -137,6 +172,10 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
     });
 });
 
+/**
+ * GET /current
+ * response {Array.<DialogModel>}
+ */
 router.get('/current', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     DialogModel.dialogsForUser(currentUser).then(function (dialogs) {
@@ -148,7 +187,7 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
             var dialog = dialogs[i];
-            dialogsOutput.push(dialog.toPublicJSON());
+            dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
     }).catch(function (error) {
@@ -156,6 +195,13 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * POST /add
+ * body: userId {string}
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.post('/add', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -165,12 +211,18 @@ router.post('/add', app.oauth.authorise(), function (req, res, next) {
     DialogModel.addUser(user, dialogId, currentUser, permissions).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
 });
 
+/**
+ * POST /join
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.post('/join', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -179,12 +231,18 @@ router.post('/join', app.oauth.authorise(), function (req, res, next) {
     DialogModel.join(dialogId, currentUser, permissions).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
 });
 
+/**
+ * DELETE /leave
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -197,6 +255,13 @@ router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * DELETE /remove
+ * body: userId {string}
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -204,12 +269,19 @@ router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
     var dialogId = json.dialogId;
     var permissions = json.permissions;
     DialogModel.removeUser(user, dialogId, currentUser, permissions).then(function (dialog) {
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
 });
 
+/**
+ * PUT /message/send
+ * body: message {MessageModel}
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -231,8 +303,8 @@ router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
 
         }).then(function (dialog) {
 
-            Socket.send(message, dialog);
-            res.json(message.toPublicJSON());
+            Socket.send(message.toJSON(), dialog);
+            res.json(message.toJSON());
         });
     }).catch(function (error) {
         next(error);

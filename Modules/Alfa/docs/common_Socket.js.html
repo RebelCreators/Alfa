@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: common/Socket.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: common/Socket.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>var afimport = require("afimport");
+var Shared = afimport.require("shared");
+var io = require('socket.io')();
+var oauth = afimport.require('AccessToken');
+var DeviceModel = afimport.require('Device');
+var DialogModel = afimport.require('Dialog');
+
+var clients = {};
+
+/**
+ * connect socket
+ */
+var connect = function () {
+    io.use(function (socket, next) {
+        try {
+            var query = socket.handshake.query;
+            var bearer = query.bearer;
+
+            oauth.getAccessToken(bearer, function (error, token) {
+                if (error) {
+                    var error = new Error("401");
+                    error.code = 401;
+                    next(error);
+                    return;
+                }
+                socket.client.token = token;
+                next();
+            });
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    io.use(function (socket, next) {
+        try {
+            var query = socket.handshake.query;
+            var currentUser = socket.client.token.user;
+            var deviceToken = query.deviceToken;
+            DeviceModel.deviceWithToken(deviceToken).then(function (device) {
+                device.clientId = socket.client.id;
+                return device.updateDevice(currentUser).then(function () {
+                    next();
+                })
+            }).catch(function (error) {
+                next(error);
+            });
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    io.use(function (socket, next) {
+        try {
+            socket.on('disconnect', function () {
+                var query = socket.handshake.query;
+                var currentUser = socket.client.token.user;
+                var deviceToken = query.deviceToken;
+                var id = socket.client.id;
+                delete clients[id];
+                DeviceModel.deviceWithToken(deviceToken).then(function (device) {
+                    if (device.user._id != currentUser._id) {
+                        return;
+                    }
+                    device.clientId = null;
+                    return device.updateDevice(currentUser).then(function () {
+
+                    });
+                });
+            });
+            next();
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    io.on('connection', function (socket) {
+        var id = socket.client.id;
+        clients[id] = socket;
+    });
+
+    io.listen(5225);
+};
+
+/**
+ * Sends message to device.
+ *
+ * @param {object} message
+ * @param {DeviceModel} device
+ */
+var sendMessageToDevice = function (message, device) {
+    var clientId = device.clientId;
+    if (clientId) {
+        if (clients[clientId]) {
+            clients[clientId].emit('com.rebel.creators.message', message);
+        }
+    }
+};
+
+/**
+ * Sends message to dialog
+ *
+ * @param {object} message
+ * @param {DialogModel} dialog
+ */
+var send = function (message, dialog) {
+    DeviceModel.devicesForUsers(dialog.currentUsers).then(function (devices) {
+        DeviceModel.iterateDevices(devices, function (key, device) {
+            sendMessageToDevice(message, device);
+        });
+    })
+};
+
+module.exports.send = send;
+module.exports.connect = connect;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-models_DeviceModel.html">models/DeviceModel</a></li><li><a href="module-models_DialogModel.html">models/DialogModel</a></li><li><a href="module-models_DialogTipModel.html">models/DialogTipModel</a></li><li><a href="module-models_LocationModel.html">models/LocationModel</a></li><li><a href="module-models_MessageModel.html">models/MessageModel</a></li><li><a href="module-models_UserModel.html">models/UserModel</a></li></ul><h3>Classes</h3><ul><li><a href="AccessTokenModel.html">AccessTokenModel</a></li><li><a href="module-models_DeviceModel-DeviceModel.html">DeviceModel</a></li><li><a href="module-models_DialogModel-DialogModel.html">DialogModel</a></li><li><a href="module-models_DialogModel-PermissionModel.html">PermissionModel</a></li><li><a href="module-models_DialogTipModel-DialogTipModel.html">DialogTipModel</a></li><li><a href="module-models_LocationModel-LocationModel.html">LocationModel</a></li><li><a href="module-models_MessageModel-MessageModel.html">MessageModel</a></li><li><a href="module-models_MessageModel-PayloadModel.html">PayloadModel</a></li><li><a href="module-models_UserModel-UserModel.html">UserModel</a></li><li><a href="RefreshTokenModel.html">RefreshTokenModel</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AccessTokenSchema">AccessTokenSchema</a></li><li><a href="global.html#connect">connect</a></li><li><a href="global.html#getUser">getUser</a></li><li><a href="global.html#RefreshTokenSchema">RefreshTokenSchema</a></li><li><a href="global.html#send">send</a></li><li><a href="global.html#sendMessageToDevice">sendMessageToDevice</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Dec 12 2017 01:33:40 GMT-0800 (PST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
