@@ -1,7 +1,7 @@
 # Alfa
 Nodejs server for Bravo client
 
-##Docs
+## Docs
 
 https://rebelcreators.github.io/AflaDocs.github.io/
 
