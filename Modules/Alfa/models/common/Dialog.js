@@ -6,6 +6,10 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var _ = require('underscore');
 
+/**
+ *
+ * @type {permissionSchema}
+ */
 var permissionSchema = new Schema({
     read: {
         type: String,
@@ -29,6 +33,10 @@ var permissionSchema = new Schema({
     }
 });
 
+/**
+ *
+ * @type {{toObject: {virtuals: boolean}, toJSON: {virtuals: boolean}}}
+ */
 var schemaOptions = {
     toObject: {
         virtuals: true
@@ -37,6 +45,11 @@ var schemaOptions = {
         virtuals: true
     }
 };
+
+/**
+ *
+ * @type {DialogSchema}
+ */
 var DialogSchema = new Schema({
     creator: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', required: true},
     currentUsers: [String],
@@ -54,6 +67,14 @@ DialogSchema.virtual('unreadMessages').get(function () {
     this._unread = unread;
 });
 
+//*********************************************************************************
+//*************************** JSON Methods
+
+/**
+ *
+ * @param {Object} json
+ * @return {DialogModel}
+ */
 DialogSchema.statics.fromPublicJSON = function (json) {
     json._id = null;
     delete json._id;
@@ -69,6 +90,14 @@ DialogSchema.statics.fromPublicJSON = function (json) {
     return new DialogModel(mapped);
 };
 
+//*********************************************************************************
+//*************************** Public Methods
+
+/**
+ *
+ * @param {UserModel} currentUser
+ * @return {Promise.<DialogModel, Error>}
+ */
 DialogSchema.methods.saveNewDialog = function (currentUser) {
     var self = this;
     self.creator = currentUser;
@@ -84,12 +113,224 @@ DialogSchema.methods.saveNewDialog = function (currentUser) {
     });
 };
 
-DialogSchema.statics.getSingleDialogUnreadCount = function (dialog, currentUserId) {
-    return DialogModel.getDialogUnreadCounts([dialog], currentUserId).then(function (dialogs) {
-        return dialogs[0];
+//*********************************************************************************
+//*************************** Static Methods
+
+/**
+ *
+ * @param {string} userId
+ * @param {string} dialogId
+ * @param {UserModel} currentUser
+ * @param {PermissionsModel} permissions
+ * @return {Promise.<DialogModel, Error>}
+ */
+DialogSchema.statics.addUser = function (userId, dialogId, currentUser, permissions) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var updatePermissions = permissions["update"];
+        if (!updatePermissions) {
+            return reject(new Error("Permissions not set"));
+        }
+        var query = {
+            $and: [{currentUsers: {$ne: userId}}],
+            _id: dialogId,
+            "permissions.update": updatePermissions
+        };
+
+        if (updatePermissions == "any_participant") {
+            var and = query.$and;
+            and.push({currentUsers: currentUser._id});
+            query.$and = and;
+        } else if (updatePermissions == "only_owner") {
+            var and = query.$and;
+            and.push({creator: currentUser});
+            query.$and = and;
+        }
+
+        DialogModel.findOneAndUpdate(query, {
+            $addToSet: {
+                currentUsers: userId,
+                allUsers: userId
+            }
+        }, {new: true}).populate('allUsers creator').exec(function (err, obj) {
+            if (err) return reject(err);
+            if (!obj) return reject(new Error("No such dialog"));
+
+            resolve(obj);
+        });
     });
 };
 
+/**
+ *
+ * @param {UserModel} user
+ * @return {Promise.<Array.<DialogModel, Error>>}
+ */
+DialogSchema.statics.dialogsForUser = function (user) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var query = {
+            currentUsers: user._id
+        };
+
+        DialogModel.find(query).populate('allUsers creator').exec(function (err, objs) {
+            if (err) return reject(err);
+            resolve(objs);
+        });
+    });
+};
+
+/**
+ *
+ * @param {string} dialogId
+ * @param {UserModel} currentUser
+ * @param {PermissionModel} permissions
+ * @return {Promise.<DialogModel, Error>}
+ */
+DialogSchema.statics.dialogForMessage = function (dialogId, currentUser, permissions) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var writePermissions = permissions["write"];
+        if (!writePermissions) {
+            return reject(new Error("Permissions not set"));
+        }
+        var query = {
+            _id: dialogId,
+            "permissions.write": writePermissions
+        };
+
+        if (writePermissions == "any_participant") {
+            query.$and = [{currentUsers: currentUser._id}];
+        } else if (writePermissions == "only_owner") {
+            query.$and = [{creator: currentUser}];
+        }
+
+        DialogModel.findOne(query, function (err, obj) {
+            if (err) return reject(err);
+            if (!obj) return reject(new Error("No such dialog"));
+
+            resolve(obj);
+        });
+    });
+};
+
+/**
+ *
+ * @param {string} dialogId
+ * @return {Promise.<DialogModel>, Error}
+ */
+DialogSchema.statics.dialogWithId = function (dialogId, permissions, currentUser) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var readPermissions = permissions["read"];
+        if (!readPermissions) {
+            return reject(new Error("Permissions not set"));
+        }
+        var query = {
+            _id: dialogId,
+            "permissions.read": readPermissions
+        };
+
+        if (readPermissions == "any_participant") {
+            query.$and = [{currentUsers: currentUser._id}];
+        } else if (readPermissions == "only_owner") {
+            query.$and = [{creator: currentUser}];
+        }
+
+        DialogModel.findOne(query).populate('allUsers creator').exec(function (err, obj) {
+            if (err) return reject(err);
+            if (!obj) {
+                var error = new Error("dialog not found");
+                error.code = 404;
+                reject(error);
+                return;
+            }
+            resolve(obj);
+        });
+    });
+};
+
+/**
+ *
+ * @param {Array.<string>} dialogId
+ * @param {PermissionsModel} permissions
+ * @param {UserModel} currentUser
+ * @return {Promise.<Array.<DialogModel>>, Error}
+ */
+DialogSchema.statics.dialogWithIds = function (dialogIds, permissions, currentUser) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var readPermissions = permissions["read"];
+        if (!readPermissions) {
+            return reject(new Error("Permissions not set"));
+        }
+        var query = {
+            _id: {$in: dialogIds},
+            "permissions.read": readPermissions
+        };
+
+        if (readPermissions == "any_participant") {
+            query.$and = [{currentUsers: currentUser._id}];
+        } else if (readPermissions == "only_owner") {
+            query.$and = [{creator: currentUser}];
+        }
+
+        DialogModel.find(query).populate('allUsers creator').exec(function (err, objs) {
+            if (err) return reject(err);
+            if (!objs) {
+                var error = new Error("dialog not found");
+                error.code = 404;
+                reject(error);
+                return;
+            }
+
+            resolve(objs);
+        });
+    });
+};
+
+/**
+ *
+ * @param {Array.<string>} users
+ * @param {UserModel} currentUser
+ * @param {PermissionsModel} permissions
+ * @return {Promise.<Array.<DialogModel, Error>>}
+ */
+DialogSchema.statics.dialogsWithUsers = function (users, currentUser, permissions) {
+    var self = this;
+    return new Promise(function (resolve, reject) {
+        var readPermissions = permissions["read"];
+        if (!readPermissions) {
+            return reject(new Error("Permissions not set"));
+        }
+        var query = {
+            $and: [{currentUsers: {$all: users}}],
+            "permissions.read": readPermissions
+        };
+
+        if (readPermissions == "any_participant") {
+            var and = query.$and;
+            and.push({currentUsers: currentUser._id});
+            query.$and = and;
+        } else if (readPermissions == "only_owner") {
+            var and = query.$and;
+            and.push({creator: currentUser});
+            query.$and = and;
+        }
+
+        DialogModel.find(query).populate('allUsers creator').exec(function (err, objs) {
+            if (err) return reject(err);
+            resolve(objs);
+        });
+    });
+};
+
+/**
+ *
+ * @param {Array.<DialogModel>} dialogs
+ * @param {string} currentUserId
+ * @return {Promise.<Array.<DialogModel>, Error>}
+ */
 DialogSchema.statics.getDialogUnreadCounts = function (dialogs, currentUserId) {
     var success = true;
     return new Promise(function (resolve, reject) {
@@ -128,206 +369,42 @@ DialogSchema.statics.getDialogUnreadCounts = function (dialogs, currentUserId) {
     });
 };
 
+/**
+ *
+ * @param {DialogModel} dialog
+ * @param {string} currentUserId
+ * @return {Promise.<Array.<DialogModel>, Error>}
+ */
+DialogSchema.statics.getSingleDialogUnreadCount = function (dialog, currentUserId) {
+    return DialogModel.getDialogUnreadCounts([dialog], currentUserId).then(function (dialogs) {
+        return dialogs[0];
+    });
+};
+
+/**
+ *
+ * @param {string} dialogId
+ * @return {Promise.<DialogModel>, Error}
+ */
 DialogSchema.statics.incrementDialog = function (dialogId) {
     return new Promise(function (resolve, reject) {
         var update = {$inc: {numberOfMessages: 1}, $currentDate: {date: true}};
         DialogModel.findOneAndUpdate({_id: dialogId}, update, {new: true}, function (err, dialog) {
             if (err) return reject(err);
-            if (!dialog)  return reject(new Error("No such dialog"));
+            if (!dialog) return reject(new Error("No such dialog"));
 
             resolve(dialog);
         });
     });
 };
 
-DialogSchema.statics.dialogForMessage = function (dialogId, currentUser, permissions) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-        var writePermissions = permissions["write"];
-        if (!writePermissions) {
-            return reject(new Error("Permissions not set"));
-        }
-        var query = {
-            _id: dialogId,
-            "permissions.write": writePermissions
-        };
-
-        if (writePermissions == "any_participant") {
-            query.$and = [{currentUsers: currentUser._id}];
-        } else if (writePermissions == "only_owner") {
-            query.$and = [{creator: currentUser}];
-        }
-
-        DialogModel.findOne(query, function (err, obj) {
-            if (err) return reject(err);
-            if (!obj) return reject(new Error("No such dialog"));
-
-            resolve(obj);
-        });
-    });
-};
-
-DialogSchema.statics.dialogsWithUsers = function (users, currentUser, permissions) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-        var readPermissions = permissions["read"];
-        if (!readPermissions) {
-            return reject(new Error("Permissions not set"));
-        }
-        var query = {
-            $and: [{currentUsers: {$all: users}}],
-            "permissions.read": readPermissions
-        };
-
-        if (readPermissions == "any_participant") {
-            var and = query.$and;
-            and.push({currentUsers: currentUser._id});
-            query.$and = and;
-        } else if (readPermissions == "only_owner") {
-            var and = query.$and;
-            and.push({creator: currentUser});
-            query.$and = and;
-        }
-
-        DialogModel.find(query).populate('allUsers creator').exec(function (err, objs) {
-            if (err) return reject(err);
-            resolve(objs);
-        });
-    });
-};
-
-DialogSchema.statics.dialogsForUser = function (user) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-        var query = {
-            currentUsers: user._id
-        };
-
-        DialogModel.find(query).populate('allUsers creator').exec(function (err, objs) {
-            if (err) return reject(err);
-            resolve(objs);
-        });
-    });
-};
-
-DialogSchema.statics.dialogWithId = function (dialogId, permissions, currentUser) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-        var readPermissions = permissions["read"];
-        if (!readPermissions) {
-            return reject(new Error("Permissions not set"));
-        }
-        var query = {
-            _id: dialogId,
-            "permissions.read": readPermissions
-        };
-
-        if (readPermissions == "any_participant") {
-            query.$and = [{currentUsers: currentUser._id}];
-        } else if (readPermissions == "only_owner") {
-            query.$and = [{creator: currentUser}];
-        }
-
-        DialogModel.findOne(query).populate('allUsers creator').exec(function (err, obj) {
-            if (err) return reject(err);
-            if (!obj) {
-                var error = new Error("dialog not found");
-                error.code = 404;
-                reject(error);
-                return;
-            }
-            resolve(obj);
-        });
-    });
-};
-
-DialogSchema.statics.dialogWithIds = function (dialogIds, permissions, currentUser) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-        var readPermissions = permissions["read"];
-        if (!readPermissions) {
-            return reject(new Error("Permissions not set"));
-        }
-        var query = {
-            _id: {$in: dialogIds},
-            "permissions.read": readPermissions
-        };
-
-        if (readPermissions == "any_participant") {
-            query.$and = [{currentUsers: currentUser._id}];
-        } else if (readPermissions == "only_owner") {
-            query.$and = [{creator: currentUser}];
-        }
-
-        DialogModel.find(query).populate('allUsers creator').exec(function (err, objs) {
-            if (err) return reject(err);
-            if (!objs) {
-                var error = new Error("dialog not found");
-                error.code = 404;
-                reject(error);
-                return;
-            }
-
-            resolve(objs);
-        });
-    });
-};
-
-DialogSchema.statics.messages = function (date, offset, limit, asc, dialogId, permissions, currentUser) {
-    var self = this;
-    return DialogModel.dialogWithId(dialogId, permissions, currentUser).then(function (dialog) {
-        return MessageModel.messages(date, offset, limit, asc, dialog._id);
-    });
-};
-
-
-DialogSchema.statics.messagesBetweenDates = function (fromDate, toDate, asc, currentUser) {
-    return DialogModel.dialogsForUser(currentUser).then(function (dialogs) {
-        var dialogIds = (dialogs || []).map(function (obj) {
-          return obj._id;
-        });
-        return MessageModel.messagesBetweenDates(fromDate, toDate, asc, dialogIds);
-    });
-};
-
-
-DialogSchema.statics.addUser = function (userId, dialogId, currentUser, permissions) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-        var updatePermissions = permissions["update"];
-        if (!updatePermissions) {
-            return reject(new Error("Permissions not set"));
-        }
-        var query = {
-            $and: [{currentUsers: {$ne: userId}}],
-            _id: dialogId,
-            "permissions.update": updatePermissions
-        };
-
-        if (updatePermissions == "any_participant") {
-            var and = query.$and;
-            and.push({currentUsers: currentUser._id});
-            query.$and = and;
-        } else if (updatePermissions == "only_owner") {
-            var and = query.$and;
-            and.push({creator: currentUser});
-            query.$and = and;
-        }
-
-        DialogModel.findOneAndUpdate(query, {
-            $addToSet: {
-                currentUsers: userId,
-                allUsers: userId
-            }
-        }, {new: true}).populate('allUsers creator').exec(function (err, obj) {
-            if (err) return reject(err);
-            if (!obj) return reject(new Error("No such dialog"));
-
-            resolve(obj);
-        });
-    });
-};
-
+/**
+ *
+ * @param {string} dialogId
+ * @param {UserModel} currentUser
+ * @param {PermissionsModel} permissions
+ * @return {Promise.<DialogModel, Error>}
+ */
 DialogSchema.statics.join = function (dialogId, currentUser, permissions) {
     var self = this;
     return new Promise(function (resolve, reject) {
@@ -359,8 +436,51 @@ DialogSchema.statics.join = function (dialogId, currentUser, permissions) {
             resolve(obj);
         });
     });
-}
+};
 
+/**
+ *
+ * @param {Date} date
+ * @param {number} offset
+ * @param {number} limit
+ * @param {boolean} asc
+ * @param {string} dialogId
+ * @param {PermissionsModel} permissions
+ * @param {UserModel} currentUser
+ * @return {Promise.<Array.<MessageModel>, Error>}
+ */
+DialogSchema.statics.messages = function (date, offset, limit, asc, dialogId, permissions, currentUser) {
+    var self = this;
+    return DialogModel.dialogWithId(dialogId, permissions, currentUser).then(function (dialog) {
+        return MessageModel.messages(date, offset, limit, asc, dialog._id);
+    });
+};
+
+/**
+ *
+ * @param {Date} fromDate
+ * @param {Date} toDate
+ * @param {boolean} asc
+ * @param {UserModel} currentUser
+ * @return {Promise.<Array.<MessageModel>, Error>}
+ */
+DialogSchema.statics.messagesBetweenDates = function (fromDate, toDate, asc, currentUser) {
+    return DialogModel.dialogsForUser(currentUser).then(function (dialogs) {
+        var dialogIds = (dialogs || []).map(function (obj) {
+            return obj._id;
+        });
+        return MessageModel.messagesBetweenDates(fromDate, toDate, asc, dialogIds);
+    });
+};
+
+/**
+ *
+ * @param {string} userId
+ * @param {string} dialogId
+ * @param {UserModel} currentUser
+ * @param {PermissionsModel} permissions
+ * @return {Promise.<DialogModel, Error>}
+ */
 DialogSchema.statics.removeUser = function (userId, dialogId, currentUser, permissions) {
     var self = this;
     return new Promise(function (resolve, reject) {
@@ -401,5 +521,8 @@ DialogSchema.statics.removeUser = function (userId, dialogId, currentUser, permi
 
 mongoose.model('DialogModel', DialogSchema);
 
+/**
+ * @constructor
+ */
 var DialogModel = mongoose.model('DialogModel');
 module.exports = DialogModel;

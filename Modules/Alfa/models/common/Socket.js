@@ -6,8 +6,11 @@ var DeviceModel = afimport.require('Device');
 var DialogModel = afimport.require('Dialog');
 
 var clients = {};
-var connect = function () {
 
+/**
+ * connect socket
+ */
+var connect = function () {
     io.use(function (socket, next) {
         try {
             var query = socket.handshake.query;
@@ -78,6 +81,12 @@ var connect = function () {
     io.listen(5225);
 };
 
+/**
+ * Sends message to device.
+ *
+ * @param {object} message
+ * @param {DeviceModel} device
+ */
 var sendMessageToDevice = function (message, device) {
     var clientId = device.clientId;
     if (clientId) {
@@ -85,15 +94,21 @@ var sendMessageToDevice = function (message, device) {
             clients[clientId].emit('com.rebel.creators.message', message);
         }
     }
-}
+};
 
+/**
+ * Sends message to dialog
+ *
+ * @param {object} message
+ * @param {DialogModel} dialog
+ */
 var send = function (message, dialog) {
     DeviceModel.devicesForUsers(dialog.currentUsers).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
             sendMessageToDevice(message, device);
         });
     })
-}
+};
 
 module.exports.send = send;
 module.exports.connect = connect;

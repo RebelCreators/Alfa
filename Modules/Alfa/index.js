@@ -16,8 +16,8 @@ module.exports = function (express, afimportModule) {
     mongoose.Promise = Promise;
     afimport.provide(mongoose, "mongoose");
 
-// Connection URL
     var config = afimport.require("config");
+// Connection URL
     var url = config.db;
 
     var DB = afimport.require("db");
@@ -110,6 +110,6 @@ module.exports = function (express, afimportModule) {
 
     afimport.require("Socket").connect();
 
-   module.exports.afimport = afimport.exportModule();
+    module.exports.afimport = afimport.exportModule();
 }
 

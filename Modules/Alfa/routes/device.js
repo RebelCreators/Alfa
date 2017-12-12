@@ -6,6 +6,11 @@ var app = afimport.require('app', {
 });
 var DeviceModel = afimport.require("Device");
 
+/**
+ * PUT /update
+ * body: DeviceModel
+ * response none
+ */
 router.put('/update', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var device = req.body;
@@ -17,6 +22,11 @@ router.put('/update', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * POST /delete
+ * body: DeviceModel
+ * response none
+ */
 router.post('/delete', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var device = req.body;

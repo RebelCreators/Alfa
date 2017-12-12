@@ -3,6 +3,10 @@ var Shared = afimport.require("shared");
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+/**
+ *
+ * @type {LocationSchema}
+ */
 var LocationSchema = new Schema({
     loc: {
         type: [Number]
@@ -11,8 +15,16 @@ var LocationSchema = new Schema({
     userType: String
 });
 
-LocationSchema.index({loc : '2dsphere'});
+LocationSchema.index({loc: '2dsphere'});
 
+//*********************************************************************************
+//*************************** JSON Methods
+
+/**
+ *
+ * @param {Object} json
+ * @return {LocationModel}
+ */
 LocationSchema.statics.fromPublicJSON = function (json) {
     json.loc = [json.lng, json.lat];
 
@@ -21,14 +33,14 @@ LocationSchema.statics.fromPublicJSON = function (json) {
     return new LocationModel(mapped);
 };
 
-LocationSchema.statics.distanceFromCoordinates = function (lon1, lat1, lon2, lat2) {
-    var rlat1 = Math.PI * lat1 / 180
-    var rlat2 = Math.PI * lat2 / 180
-    var dist = Math.sin(rlat1) * Math.sin(rlat2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.cos(Math.PI * (lon1 - lon2) / 180);
-    dist = Math.acos(dist)  * 180 / Math.PI * 60 * 1.1515 * 1.609344
-    return dist
-};
+//*********************************************************************************
+//*************************** Public Methods
 
+/**
+ *
+ * @param {UserModel} currentUser
+ * @return {Promise.<LocationModel, Error>}
+ */
 LocationSchema.methods.updateLocation = function (currentUser) {
     var self = this;
     return new Promise(function (resolve, reject) {
@@ -43,6 +55,30 @@ LocationSchema.methods.updateLocation = function (currentUser) {
     });
 };
 
+//*********************************************************************************
+//*************************** Static Methods
+
+/**
+ *
+ * @param {number} lon1
+ * @param {number} lat1
+ * @param {number} lon2
+ * @param {number} lat2
+ * @return {number}
+ */
+LocationSchema.statics.distanceFromCoordinates = function (lon1, lat1, lon2, lat2) {
+    var rlat1 = Math.PI * lat1 / 180
+    var rlat2 = Math.PI * lat2 / 180
+    var dist = Math.sin(rlat1) * Math.sin(rlat2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.cos(Math.PI * (lon1 - lon2) / 180);
+    dist = Math.acos(dist) * 180 / Math.PI * 60 * 1.1515 * 1.609344
+    return dist
+};
+
+/**
+ *
+ * @param {string} userId
+ * @return {Promise.<LocationModel, Error>}
+ */
 LocationSchema.statics.userLocation = function (userId) {
     var self = this;
     return new Promise(function (resolve, reject) {
@@ -54,6 +90,15 @@ LocationSchema.statics.userLocation = function (userId) {
     });
 };
 
+/**
+ *
+ * @param {Object} query
+ * @param {number} km
+ * @param {number} limit
+ * @param {number} offset
+ * @param {UserModel} currentUser
+ * @return {Promise.<Array.<LocationModel>, Error>}
+ */
 LocationSchema.statics.usersLocationsNearMe = function (query, km, limit, offset, currentUser) {
 
     return LocationModel.userLocation(currentUser._id).then(function (location) {
@@ -84,5 +129,9 @@ LocationSchema.statics.usersLocationsNearMe = function (query, km, limit, offset
 };
 
 mongoose.model('LocationModel', LocationSchema);
+
+/**
+ * @constructor
+ */
 var LocationModel = mongoose.model('LocationModel');
 module.exports = LocationModel;

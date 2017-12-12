@@ -9,6 +9,11 @@ var DialogModel = afimport.require("Dialog");
 var MessageModel = afimport.require("Message");
 var Socket = afimport.require("Socket");
 
+/**
+ * PUT /new
+ * body: DialogModel
+ * response {DialogModel}
+ */
 router.put('/new', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -24,6 +29,11 @@ router.put('/new', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * GET /:dialogId/id
+ * query: permissions {PremissionsModel}
+ * response {DialogModel}
+ */
 router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var dialogId = req.params.dialogId;
@@ -38,6 +48,12 @@ router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * POST /:dialogId/id
+ * body: permissions {PremissionsModel}
+ * body: dialogIds {Array.<string>}
+ * response {DialogModel}
+ */
 router.post('/ids', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var permissions = Object.assign({}, req.body.permissions);
@@ -59,6 +75,11 @@ router.post('/ids', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * GET /find/users
+ * query: permissions {PremissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var permissions = Object.assign({}, req.query.permissions);
@@ -80,7 +101,15 @@ router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
-
+/**
+ * GET /messages/:dialogId
+ * query: permissions {PremissionsModel}
+ * query: offset {number}
+ * query: limit {number}
+ * query: asc {boolean}
+ * query: date {string}
+ * response {Array.<MessageModel>}
+ */
 router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var dialogId = req.params.dialogId;
@@ -106,6 +135,12 @@ router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, nex
     });
 });
 
+/**
+ * GET /messages/:dialogId
+ * query: toDate {string}
+ * query: fromDate {string}
+ * response {Array.<MessageModel>}
+ */
 router.get('/between/messages', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var fromDate = null;
@@ -137,6 +172,10 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
     });
 });
 
+/**
+ * GET /current
+ * response {Array.<DialogModel>}
+ */
 router.get('/current', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     DialogModel.dialogsForUser(currentUser).then(function (dialogs) {
@@ -156,6 +195,13 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * POST /add
+ * body: userId {string}
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.post('/add', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -171,6 +217,12 @@ router.post('/add', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * POST /join
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.post('/join', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -185,6 +237,12 @@ router.post('/join', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * DELETE /leave
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -197,6 +255,13 @@ router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * DELETE /remove
+ * body: userId {string}
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -210,6 +275,13 @@ router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * PUT /message/send
+ * body: message {MessageModel}
+ * body: dialogId {string}
+ * body: permissions {PermissionsModel}
+ * response {Array.<DialogModel>}
+ */
 router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     var json = Object.assign({}, req.body);
@@ -231,7 +303,7 @@ router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
 
         }).then(function (dialog) {
 
-            Socket.send(message, dialog);
+            Socket.send(message.toJSON(), dialog);
             res.json(message.toJSON());
         });
     }).catch(function (error) {

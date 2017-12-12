@@ -10,6 +10,10 @@ router.get('/', function (req, res, next) {
     res.json({error: "resouce needed"});
 });
 
+/**
+ * GET /:userId/id
+ * response {UserModel}
+ */
 router.get('/:userId/id', app.oauth.authorise(), function (req, res, next) {
     var userId = req.params.userId;
     UserModel.getUserById(userId).then(function (user) {
@@ -24,13 +28,18 @@ router.get('/:userId/id', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * GET /id
+ * query userIDs {Array.<string>}
+ * response {Array.<UserModel>}
+ */
 router.get('/id', app.oauth.authorise(), function (req, res, next) {
     var userIds = req.query.userIDs;
     UserModel.getUsersByIds(userIds).then(function (users) {
         var u = []
         for (var i = 0; i < users.length; i++) {
             var user = users[i];
-         u.push(user.toJSON())
+            u.push(user.toJSON())
         }
         res.json(u);
     }).catch(function (error) {
@@ -38,6 +47,11 @@ router.get('/id', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * GET /username
+ * query userNames {Array.<string>}
+ * response {Array.<UserModel>}
+ */
 router.get('/username', app.oauth.authorise(), function (req, res, next) {
     var usernames = req.query.userNames;
     UserModel.getUsersByUserNames(usernames).then(function (users) {
@@ -52,6 +66,10 @@ router.get('/username', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * GET /:userName/username
+ * response {UserModel}
+ */
 router.get('/:userName/username', app.oauth.authorise(), function (req, res, next) {
     var userName = req.params.userName;
     UserModel.getUserByUserName(userName).then(function (user) {
@@ -65,6 +83,10 @@ router.get('/:userName/username', app.oauth.authorise(), function (req, res, nex
     });
 });
 
+/**
+ * GET /current
+ * response {UserModel}
+ */
 router.get('/current', app.oauth.authorise(), function (req, res, next) {
     var currentUser = req.oauth.bearerToken.user;
     UserModel.getUserById(currentUser._id).then(function (user) {
@@ -78,6 +100,11 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * PUT /update
+ * body userModel {UserModel}
+ * response {UserModel}
+ */
 router.put('/update', app.oauth.authorise(), function (req, res, next) {
     var json = UserModel.fromPublicJSON(req.body).toJSON();
     delete json._id;
@@ -94,13 +121,17 @@ router.put('/update', app.oauth.authorise(), function (req, res, next) {
     });
 });
 
+/**
+ * PUT /register
+ * body userModel {UserModel}
+ * response {UserModel}
+ */
 router.post('/register', function (req, res, next) {
     var json = Object.assign({}, req.body);
     json.id = null;
     delete json.id;
     var user = UserModel.fromPublicJSON(json);
     user.password = json.password;
-    console.log("query %j ", user);
     user.validateUser().then(function () {
         return UserModel.getUserByUserName(user.userName);
     }).then(function (existing) {

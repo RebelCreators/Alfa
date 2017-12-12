@@ -3,6 +3,10 @@ var router = express.Router();
 var afimport = require("afimport");
 
 /**
+ * Routes files with provided options
+ */
+
+/**
  *
  * @param filePattern: string
  * @param options: {namespace: string, subpath: string, version: string}
