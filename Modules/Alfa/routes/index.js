@@ -3,13 +3,18 @@ var router = express.Router();
 var afimport = require("afimport");
 
 /**
+ * The routing-layer
+ * @module Router/Alfa
+ */
+
+/**
  * Routes files with provided options
  */
 
 /**
- *
- * @param filePattern: string
- * @param options: {namespace: string, subpath: string, version: string}
+ * @private
+ * @param {string} filePattern
+ * @param {{namespace: ?string, subpath: ?string, version: ?string}} options
  */
 function resolve(filePattern, options) {
     var options = options || defaultOptions;
@@ -38,19 +43,38 @@ function resolve(filePattern, options) {
 }
 
 /**
- *
- * @type {{namespace: string, subpath: string, version: string}}
+ * @expose
+ * @type {{namespace: string, subpath: ?string, version: ?string}}
  */
 var defaultOptions = {
+    /**
+     * @memberof module:Router
+     * @instance
+     *
+     * @type {string}
+     */
     namespace: "com.rebel.creators.routers",
+    /**
+     * @memberof module:Router
+     * @instance
+     *
+     * @type {?string}
+     */
     subpath: null,
+    /**
+     * @memberof module:Router
+     * @instance
+     *
+     * @type {?string}
+     */
     version: null
 };
 
 /**
  *
- * @param filePattern: string
- * @param options: {namespace:string?, subpath:string?, version: string}
+ * Export Router
+ * @param {string} filePattern
+ * @param {{namespace: ?string, subpath: ?string, version: ?string}} options
  * @returns {Router}
  */
 module.exports = function (filePattern, options) {
