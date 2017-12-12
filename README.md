@@ -1,6 +1,10 @@
 # Alfa
 Nodejs server for Bravo client
 
+##Docs
+
+https://rebelcreators.github.io/AflaDocs.github.io/
+
 ## Setup:
 
 Install [mongo DB](https://docs.mongodb.com/manual/installation/)
