@@ -18,7 +18,7 @@ router.get('/:userId/id', app.oauth.authorise(), function (req, res, next) {
             throw new Error("Resource not found");
         }
 
-        res.json(user.toPublicJSON());
+        res.json(user.toJSON());
     }).catch(function (error) {
         next(error);
     });
@@ -30,7 +30,7 @@ router.get('/id', app.oauth.authorise(), function (req, res, next) {
         var u = []
         for (var i = 0; i < users.length; i++) {
             var user = users[i];
-         u.push(user.toPublicJSON())
+         u.push(user.toJSON())
         }
         res.json(u);
     }).catch(function (error) {
@@ -44,7 +44,7 @@ router.get('/username', app.oauth.authorise(), function (req, res, next) {
         var u = []
         for (var i = 0; i < users.length; i++) {
             var user = users[i];
-            u.push(user.toPublicJSON())
+            u.push(user.toJSON())
         }
         res.json(u);
     }).catch(function (error) {
@@ -59,7 +59,7 @@ router.get('/:userName/username', app.oauth.authorise(), function (req, res, nex
             res.statusCode = 404;
             throw new Error("Resource not found");
         }
-        res.json(user.toPublicJSON());
+        res.json(user.toJSON());
     }).catch(function (error) {
         next(error);
     });
@@ -72,14 +72,14 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
             res.statusCode = 404;
             throw new Error("Resource not found");
         }
-        res.json(user.toPublicJSON());
+        res.json(user.toJSON());
     }).catch(function (error) {
         next(error);
     });
 });
 
 router.put('/update', app.oauth.authorise(), function (req, res, next) {
-    var json = UserModel.fromPublicJSON(req.body).toPublicJSON();
+    var json = UserModel.fromPublicJSON(req.body).toJSON();
     delete json._id;
     delete json.userName;
     json._id = req.user._id;
@@ -88,7 +88,7 @@ router.put('/update', app.oauth.authorise(), function (req, res, next) {
             res.statusCode = 500;
             throw new Error("Error Updating");
         }
-        res.json(user.toPublicJSON());
+        res.json(user.toJSON());
     }).catch(function (error) {
         next(error);
     });
@@ -114,7 +114,7 @@ router.post('/register', function (req, res, next) {
         user.password = hash;
         return user.saveNewUser()
     }).then(function (user) {
-        res.json(user.toPublicJSON());
+        res.json(user.toJSON());
     }).catch(function (error) {
         next(error);
     });

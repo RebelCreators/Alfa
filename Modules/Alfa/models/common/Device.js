@@ -4,22 +4,23 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var DeviceSchema = new Schema({
-    user: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', required: true},
-    deviceToken: {type: String, unique: true, required: true},
-    apnsToken: String,
-    date: {type: Date, default: Date.now, required: true},
-    clientId: {type: String}
-});
-
-DeviceSchema.methods.toPublicJSON = function () {
-    var json = this.toJSON();
-    delete  json._id;
-    delete json.user;
-    delete json.date;
-    delete json.clientId;
-
-    return json;
-}
+        user: {type: mongoose.Schema.Types.ObjectId, ref: 'UserModel', required: true},
+        deviceToken: {type: String, unique: true, required: true},
+        apnsToken: String,
+        date: {type: Date, default: Date.now, required: true},
+        clientId: {type: String}
+    },
+    {
+        toJSON:
+            {
+                transform: function (doc, ret) {
+                    delete  ret._id;
+                    delete ret.user;
+                    delete ret.date;
+                    delete ret.clientId;
+                }
+            }
+    });
 
 DeviceSchema.statics.fromPublicJSON = function (json) {
     delete  json._id;

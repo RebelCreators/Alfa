@@ -94,3 +94,11 @@ module.exports.asyncForEachAsync = function (object, iter, completion) {
         iter.call(object, nextTick, keys[offset], object[keys[offset]], object);
     })();
 };
+
+module.exports.initClass = function (Clazz, Superclass) {
+    if (Superclass) {
+        Clazz.prototype = Object.create(Superclass.prototype);
+        Clazz.prototype.constructor = Clazz;
+        Clazz.super = Superclass;
+    }
+}

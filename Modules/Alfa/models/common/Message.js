@@ -69,11 +69,6 @@ MessageSchema.methods.saveMessage = function (currentUser) {
     });
 }
 
-MessageSchema.methods.toPublicJSON = function () {
-    var json = this.toJSON();
-    return json;
-}
-
 MessageSchema.statics.fromPublicJSON = function (json) {
     delete json._id;
     var mapped = Shared.caseInsensitiveMap(MessageSchema.obj, json);

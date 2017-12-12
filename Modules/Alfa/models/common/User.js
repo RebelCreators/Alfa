@@ -5,33 +5,34 @@ var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt-nodejs');
 
 var UserSchema = new Schema({
-    firstName: String,
-    lastName: String,
-    userName: {
-        type: String,
-        required: true
+        firstName: String,
+        lastName: String,
+        userName: {
+            type: String,
+            required: true
+        },
+        password: {
+            type: String,
+            required: true
+        },
+        avatar: String,
+        gender: {
+            type: String,
+            enum: ["none", "male", "female"],
+            default: 'None'
+        },
+        extras: Schema.Types.Mixed
     },
-    password: {
-        type: String,
-        required: true
-    },
-    avatar: String,
-    gender: {
-        type: String,
-        enum : ["none","male", "female"],
-        default : 'None'
-    },
-    extras: Schema.Types.Mixed
-});
+    {
+        toJSON:
+            {
+                transform: function (doc, ret) {
+                    delete ret.password;
+                }
+            }
+    });
 
 UserSchema.statics.minimumPasswordLength = 4;
-
-UserSchema.methods.toPublicJSON = function () {
-    var json = this.toJSON({minimize : false});
-    json.password = null;
-    delete json.password;
-    return json;
-}
 
 UserSchema.statics.fromPublicJSON = function (json) {
     var object = Object.assign({}, json);
@@ -79,7 +80,7 @@ UserSchema.statics.updateUser = function (json) {
     return new Promise(function (resolve, reject) {
         var _id = mongoose.Types.ObjectId(json._id);
         delete  json._id;
-        UserModel.findOneAndUpdate({ _id : _id }, json, { new : true }, function(err, user){
+        UserModel.findOneAndUpdate({_id: _id}, json, {new: true}, function (err, user) {
             if (err) return reject(err);
             if (!user) return callback(new Error("Error Updating user"));
 
@@ -120,7 +121,7 @@ UserSchema.statics.getUser$ = function (username, password, callback) {
 UserSchema.statics.getUser = function (username, password) {
     var self = this;
     return new Promise(function (resolve, reject) {
-        UserModel.findOne({ userName : username }, function (err, obj) {
+        UserModel.findOne({userName: username}, function (err, obj) {
             if (err) return reject(err);
             if (!obj) return resolve(null);
             bcrypt.compare(password, obj.password, function (err, res) {
@@ -149,7 +150,7 @@ UserSchema.statics.getUserById = function (userId) {
 
 UserSchema.statics.getUsersByIds = function (userIds) {
     return new Promise(function (resolve, reject) {
-        UserModel.find({'_id': { $in: userIds} }, function (err, obj) {
+        UserModel.find({'_id': {$in: userIds}}, function (err, obj) {
             if (err) return reject(err);
             if (!obj) return resolve(null);
 
@@ -160,7 +161,7 @@ UserSchema.statics.getUsersByIds = function (userIds) {
 
 UserSchema.statics.getUsersByUserNames = function (userIds) {
     return new Promise(function (resolve, reject) {
-        UserModel.find({ userName : { $in: userIds} }, function (err, obj) {
+        UserModel.find({userName: {$in: userIds}}, function (err, obj) {
             if (err) return reject(err);
             if (!obj) return resolve(null);
 

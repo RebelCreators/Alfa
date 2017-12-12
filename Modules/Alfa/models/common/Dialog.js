@@ -54,19 +54,6 @@ DialogSchema.virtual('unreadMessages').get(function () {
     this._unread = unread;
 });
 
-DialogSchema.methods.toPublicJSON = function () {
-    var json = this.toJSON({minimize: false, virtuals: true});
-    json.creator = this.creator.toPublicJSON();
-    var allUsers = [];
-    for (var i = 0; i < this.allUsers.length; i++) {
-        var user = this.allUsers[i];
-        allUsers.push(user.toPublicJSON());
-    }
-    json.allUsers = allUsers;
-
-    return json;
-}
-
 DialogSchema.statics.fromPublicJSON = function (json) {
     json._id = null;
     delete json._id;

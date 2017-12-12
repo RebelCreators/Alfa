@@ -18,7 +18,7 @@ router.put('/new', app.oauth.authorise(), function (req, res, next) {
             res.statusCode = 500;
             throw new Error("Error Saving");
         }
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
@@ -32,7 +32,7 @@ router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
     DialogModel.dialogWithId(dialogId, permissions, currentUser).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
-        res.json(dialog ? dialog.toPublicJSON() : null);
+        res.json(dialog ? dialog.toJSON() : null);
     }).catch(function (error) {
         next(error);
     });
@@ -51,7 +51,7 @@ router.post('/ids', app.oauth.authorise(), function (req, res, next) {
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
             var dialog = dialogs[i];
-            dialogsOutput.push(dialog.toPublicJSON());
+            dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
     }).catch(function (error) {
@@ -72,7 +72,7 @@ router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
             var dialog = dialogs[i];
-            dialogsOutput.push(dialog.toPublicJSON());
+            dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
     }).catch(function (error) {
@@ -97,7 +97,7 @@ router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, nex
     DialogModel.messages(date, offset, limit, asc, dialogId, permissions, currentUser).then(function (messages) {
         var output = [];
         for (var i = 0; i < messages.length; i++) {
-            var message = messages[i].toPublicJSON();
+            var message = messages[i].toJSON();
             output.push(message);
         }
         res.json(output);
@@ -128,7 +128,7 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
     DialogModel.messagesBetweenDates(fromDate, toDate, asc, currentUser).then(function (messages) {
         var output = [];
         for (var i = 0; i < messages.length; i++) {
-            var message = messages[i].toPublicJSON();
+            var message = messages[i].toJSON();
             output.push(message);
         }
         res.json(output);
@@ -148,7 +148,7 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
             var dialog = dialogs[i];
-            dialogsOutput.push(dialog.toPublicJSON());
+            dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
     }).catch(function (error) {
@@ -165,7 +165,7 @@ router.post('/add', app.oauth.authorise(), function (req, res, next) {
     DialogModel.addUser(user, dialogId, currentUser, permissions).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
@@ -179,7 +179,7 @@ router.post('/join', app.oauth.authorise(), function (req, res, next) {
     DialogModel.join(dialogId, currentUser, permissions).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
@@ -204,7 +204,7 @@ router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
     var dialogId = json.dialogId;
     var permissions = json.permissions;
     DialogModel.removeUser(user, dialogId, currentUser, permissions).then(function (dialog) {
-        res.json(dialog.toPublicJSON());
+        res.json(dialog.toJSON());
     }).catch(function (error) {
         next(error);
     });
@@ -232,7 +232,7 @@ router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
         }).then(function (dialog) {
 
             Socket.send(message, dialog);
-            res.json(message.toPublicJSON());
+            res.json(message.toJSON());
         });
     }).catch(function (error) {
         next(error);
