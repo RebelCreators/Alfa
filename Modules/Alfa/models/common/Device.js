@@ -1,7 +1,7 @@
-var afimport = require("afimport");
-var Shared = afimport.require("shared");
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const afimport = require("afimport");
+const Shared = afimport.require("shared");
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 /**
  * The data-layer
@@ -12,7 +12,7 @@ var Schema = mongoose.Schema;
  *
  * @constructor DeviceModel
  */
-var DeviceSchema = new Schema({
+const DeviceSchema = new Schema({
         /**
          * @memberof module:models/DeviceModel~DeviceModel
          * @instance
@@ -212,5 +212,5 @@ DeviceSchema.statics.deviceWithToken = function (deviceToken) {
 
 mongoose.model('DeviceModel', DeviceSchema);
 
-var DeviceModel = mongoose.model('DeviceModel');
+const DeviceModel = mongoose.model('DeviceModel');
 module.exports = DeviceModel;

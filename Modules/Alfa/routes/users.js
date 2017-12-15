@@ -1,10 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var afimport = require("afimport");
-var app = afimport.require('app', {
+const express = require('express');
+const router = express.Router();
+const afimport = require("afimport");
+const app = afimport.require('app', {
     namespace: "com.rebelcreators.app"
 });
-var UserModel = afimport.require("User");
+const UserModel = afimport.require("User");
 
 router.get('/', function (req, res, next) {
     res.json({error: "resouce needed"});
@@ -15,7 +15,7 @@ router.get('/', function (req, res, next) {
  * response {UserModel}
  */
 router.get('/:userId/id', app.oauth.authorise(), function (req, res, next) {
-    var userId = req.params.userId;
+    const userId = req.params.userId;
     UserModel.getUserById(userId).then(function (user) {
         if (!user) {
             res.statusCode = 404;
@@ -34,7 +34,7 @@ router.get('/:userId/id', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<UserModel>}
  */
 router.get('/id', app.oauth.authorise(), function (req, res, next) {
-    var userIds = req.query.userIDs;
+    const userIds = req.query.userIDs;
     UserModel.getUsersByIds(userIds).then(function (users) {
         var u = []
         for (var i = 0; i < users.length; i++) {
@@ -53,7 +53,7 @@ router.get('/id', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<UserModel>}
  */
 router.get('/username', app.oauth.authorise(), function (req, res, next) {
-    var usernames = req.query.userNames;
+    const usernames = req.query.userNames;
     UserModel.getUsersByUserNames(usernames).then(function (users) {
         var u = []
         for (var i = 0; i < users.length; i++) {
@@ -71,7 +71,7 @@ router.get('/username', app.oauth.authorise(), function (req, res, next) {
  * response {UserModel}
  */
 router.get('/:userName/username', app.oauth.authorise(), function (req, res, next) {
-    var userName = req.params.userName;
+    const userName = req.params.userName;
     UserModel.getUserByUserName(userName).then(function (user) {
         if (!user) {
             res.statusCode = 404;
@@ -88,7 +88,7 @@ router.get('/:userName/username', app.oauth.authorise(), function (req, res, nex
  * response {UserModel}
  */
 router.get('/current', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
+    const currentUser = req.oauth.bearerToken.user;
     UserModel.getUserById(currentUser._id).then(function (user) {
         if (!user) {
             res.statusCode = 404;
@@ -130,7 +130,7 @@ router.post('/register', function (req, res, next) {
     var json = Object.assign({}, req.body);
     json.id = null;
     delete json.id;
-    var user = UserModel.fromPublicJSON(json);
+    const user = UserModel.fromPublicJSON(json);
     user.password = json.password;
     user.validateUser().then(function () {
         return UserModel.getUserByUserName(user.userName);

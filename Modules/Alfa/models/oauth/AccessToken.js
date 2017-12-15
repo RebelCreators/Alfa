@@ -1,5 +1,5 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 /**
  * @ref oauth2.0
@@ -9,7 +9,7 @@ var Schema = mongoose.Schema;
  *
  * @type {AccessTokenSchema}
  */
-var AccessTokenSchema = new Schema({
+const AccessTokenSchema = new Schema({
     token : String,
     clientId : String,
     expires : Date,
@@ -71,5 +71,5 @@ mongoose.model('AccessToken', AccessTokenSchema);
 /**
  * @constructor
  */
-var AccessTokenModel = mongoose.model('AccessToken');
+const AccessTokenModel = mongoose.model('AccessToken');
 module.exports = AccessTokenModel;

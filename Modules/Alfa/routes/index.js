@@ -1,6 +1,6 @@
-var express = require('express');
-var router = express.Router();
-var afimport = require("afimport");
+const express = require('express');
+const router = express.Router();
+const afimport = require("afimport");
 
 /**
  * The routing-layer
@@ -24,7 +24,7 @@ function resolve(filePattern, options) {
     if (!options.subpath) {
         options.subpath = defaultOptions.subpath;
     }
-    var classNames = afimport.include(filePattern, options);
+    const classNames = afimport.include(filePattern, options);
     var subpath = options.subpath || "";
     var version = options.version || "";
     subpath = subpath.replace(/^^(\/){0,1}([A-Za-z0-9]*)(\/){0,1}/gi, "$2");

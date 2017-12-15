@@ -1,31 +1,116 @@
-module.exports = function (express, afimportModule) {
-    var app = express;
-    var path = require("path");
-    var afimport = require("afimport");
+const start = function (express, afimportModule) {
+    const cluster = require('cluster');
+    const fs = require("fs");
+    const path = require("path");
+    const afimport = require("afimport");
+    afimport.include(path.join(__dirname, 'lib/Environment.js'), {
+        override: true
+    });
+var r = afimport.exportModule();
+    if (!process.env.ALFA_CLUSTERING) {
+        execute(express, afimportModule);
+        return;
+    }
+    // Pidfile contains master process PID.
+    var pidfile = 'master.pid'
+
+    // Map of workers (PID -> worker).
+    var workers = {};
+
+    if (cluster.isMaster) {
+        process.title = "com.rebelcreators.alfa.master"
+        process.env.ALFA_PORT -= 1;
+        const cpuCount = require('os').cpus().length;
+        for (var i = 0; i < cpuCount; i += 1) {
+            var worker = cluster.fork(process.env);
+            var pid = worker.process.pid;
+            workers[pid] = worker;
+        }
+
+        cluster.on('died', function (worker) {
+            console.log('Worker ' + process.pid + ' died.');
+            // Remove dead worker.
+            delete workers[process.pid];
+
+            if (worker.exitedAfterDisconnect) {
+                return;
+            }
+
+            // Restart on worker death.
+
+            console.log('Worker ' + process.pid + ' restarting.');
+            worker = cluster.fork();
+            workers[process.pid] = worker;
+        });
+
+        // Attach signal handler to kill workers
+        // when master is terminated.
+
+        function cleanup() {
+            console.log('Master stopping.');
+
+            for (var pid in workers) {
+                console.log('Kill worker: ' + pid);
+                process.kill(pid)
+            }
+
+            // Remove pidfile.
+
+            fs.unlinkSync(pidfile);
+            workers = {};
+
+            process.exit(0);
+        }
+
+        // Master can be terminated by either SIGTERM
+        // or SIGINT. The latter is used by CTRL+C on console.
+
+        process.on('SIGTERM', cleanup);
+        process.on('SIGINT', cleanup);
+
+        // Write pidfile.
+
+        fs.writeFileSync(pidfile, process.pid);
+    } else {
+
+        process.title = "com.rebelcreators.alfa.worker"
+        process.on('SIGTERM', function () {
+            console.log('Stopping worker ' + process.pid);
+        });
+
+        console.log('Worker ' + process.pid + ' started.');
+
+        execute(express, afimportModule);
+    }
+};
+
+const execute = function (express, afimportModule) {
+    const app = express;
+    const path = require("path");
+    const afimport = require("afimport");
     if (afimportModule) {
         afimport.importModule(afimportModule);
     }
 
     afimport.include([path.join(__dirname, 'lib/**/*'), path.join(__dirname, 'models/**/*')]);
 
-    var oauthserver = require('oauth2-server');
-    var helmet = require('helmet');
+    const oauthserver = require('oauth2-server');
+    const helmet = require('helmet');
 
-    var Promise = require("bluebird");
-    var mongoose = require('mongoose');
+    const Promise = require("bluebird");
+    const mongoose = require('mongoose');
     mongoose.Promise = Promise;
     afimport.provide(mongoose, "mongoose");
 
-    var config = afimport.require("config");
 // Connection URL
-    var url = config.db;
+    const url = process.env.ALFA_DB;
 
-    var DB = afimport.require("db");
-    var oauth2 = afimport.require("oauth2.0");
+    const DB = afimport.require("db");
+    const oauth2 = afimport.require("oauth2.0");
 
-    var multipart = require('connect-multiparty');
-    var bodyParser = require('body-parser');
-    var mongoSanitize = require('express-mongo-sanitize');
+    const multipart = require('connect-multiparty');
+    const bodyParser = require('body-parser');
+    const mongoSanitize = require('express-mongo-sanitize');
 
 //provide app to be included in afimport
     afimport.provide(app, "app", {
@@ -64,7 +149,7 @@ module.exports = function (express, afimportModule) {
     app.all('/oauth/token', app.oauth.grant());
 
     afimport.provide(require(path.join(__dirname, 'routes/index.js')), "router");
-    var router = afimport.require('router');
+    const router = afimport.require('router');
     app.use('/', router(path.join(__dirname, 'routes/**/*')));
 
 // catch 404 and forward to error handler
@@ -111,5 +196,6 @@ module.exports = function (express, afimportModule) {
     afimport.require("Socket").connect();
 
     module.exports.afimport = afimport.exportModule();
-}
+};
 
+module.exports = start;

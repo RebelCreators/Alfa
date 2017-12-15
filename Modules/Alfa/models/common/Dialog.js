@@ -1,10 +1,10 @@
-var afimport = require("afimport");
-var Shared = afimport.require("shared");
-var MessageModel = afimport.require('Message');
-var DialogTipModel = afimport.require('DialogTip');
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var _ = require('underscore');
+const afimport = require("afimport");
+const Shared = afimport.require("shared");
+const MessageModel = afimport.require('Message');
+const DialogTipModel = afimport.require('DialogTip');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const _ = require('underscore');
 
 /**
  * The data-layer
@@ -19,7 +19,7 @@ var _ = require('underscore');
  * @readonly
  * @enum {string}
  */
-var PermissionLevelEnum = {
+const PermissionLevelEnum = {
     /**
      * anyone
      */
@@ -38,7 +38,7 @@ var PermissionLevelEnum = {
  *
  * @constructor PermissionModel
  */
-var PermissionSchema = new Schema({
+const PermissionSchema = new Schema({
     /**
      * @memberof module:models/DialogModel~PermissionsModel
      * @instance
@@ -89,7 +89,7 @@ var PermissionSchema = new Schema({
  * @private
  * @type {{toObject: {virtuals: boolean}, toJSON: {virtuals: boolean}}}
  */
-var schemaOptions = {
+const schemaOptions = {
     toObject: {
         virtuals: true
     },
@@ -102,7 +102,7 @@ var schemaOptions = {
  *
  * @constructor DialogModel
  */
-var DialogSchema = new Schema({
+const DialogSchema = new Schema({
     /**
      * @memberof module:models/DialogModel~DialogModel
      * @instance
@@ -673,5 +673,5 @@ DialogSchema.statics.removeUser = function (userId, dialogId, currentUser, permi
 
 mongoose.model('DialogModel', DialogSchema);
 
-var DialogModel = mongoose.model('DialogModel');
+const DialogModel = mongoose.model('DialogModel');
 module.exports = DialogModel;

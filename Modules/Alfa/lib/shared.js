@@ -1,4 +1,4 @@
-var Shared = function () {
+const Shared = function () {
 }
 
 module.exports.first = function (arr) {

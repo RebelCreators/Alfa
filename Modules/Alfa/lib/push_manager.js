@@ -1,6 +1,6 @@
-var afimport = require("afimport");
-var push_config = afimport.require('push_config');
-var Mustache = require('mustache');
+const afimport = require("afimport");
+const push_config = afimport.require('push_config');
+const Mustache = require('mustache');
 
 function PushManager() {
 
@@ -8,13 +8,11 @@ function PushManager() {
 
 PushManager.prototype.push = function(token, message) {
 
-    var config = push_config[message.configName] || push_config["default"];
+    const config = push_config[message.configName] || push_config["default"];
     if (config) {
-        var title = push_config["title"] || "Message";
-        var payload = push_config["payload"] || "new message"
-        var output = Mustache.render(payload, message);
-
-
+        const title = push_config["title"] || "Message";
+        const payload = push_config["payload"] || "new message"
+        const output = Mustache.render(payload, message);
     }
 }
 

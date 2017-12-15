@@ -1,5 +1,5 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 /**
  * @ref oauth2.0
@@ -9,7 +9,7 @@ var Schema = mongoose.Schema;
  *
  * @type {RefreshTokenSchema}
  */
-var RefreshTokenSchema = new Schema({
+const RefreshTokenSchema = new Schema({
     token: String,
     clientId: String,
     expires: Date,
@@ -66,5 +66,5 @@ mongoose.model('RefreshToken', RefreshTokenSchema);
 /**
  * @constructor
  */
-var RefreshTokenModel = mongoose.model('RefreshToken');
+const RefreshTokenModel = mongoose.model('RefreshToken');
 module.exports = RefreshTokenModel;

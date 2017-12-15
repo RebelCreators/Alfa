@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var fs = require("fs");
-var afimport = require("afimport");
-var app = afimport.require('app', {
+const express = require('express');
+const router = express.Router();
+const fs = require("fs");
+const afimport = require("afimport");
+const app = afimport.require('app', {
     namespace: "com.rebelcreators.app"
 });
-var s3 = afimport.require('s3');
-var uuid = require('node-uuid');
-var AWS_BUCKET = 'hothelpers';
+const s3 = afimport.require('s3');
+const uuid = require('node-uuid');
+const AWS_BUCKET = 'hothelpers';
 
 router.all('*', app.oauth.authorise(), function (req, res, next) {
     next();
@@ -19,20 +19,20 @@ router.all('*', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<string>}
  */
 router.post('/upload', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var filesObject = req.files;
-    var maxUploadLimit = 5;
+    const currentUser = req.oauth.bearerToken.user;
+    const filesObject = req.files;
+    const maxUploadLimit = 5;
     if (!filesObject) {
         return next(new Error("No files"));
     }
     var files = [];
-    var file = filesObject["file"];
+    const file = filesObject["file"];
     if (!file) {
         return next(new Error("No files"));
     }
     files.push(file);
     for (var i = 0; i < maxUploadLimit; i++) {
-        var file = filesObject["file" + i];
+        const file = filesObject["file" + i];
         if (!file) {
             break;
         }
@@ -43,8 +43,8 @@ router.post('/upload', app.oauth.authorise(), function (req, res, next) {
     var response = [];
     for (var i = 0; i < files.length; i++) {
         (function () {
-            var file = files[i];
-            var path = file.path;
+            const file = files[i];
+            const path = file.path;
             if (!promise) {
                 promise = uploadFile(path, currentUser._id).then(function (fileId) {
                     console.log("Successfully uploaded file: ", fileId, " ", path);
@@ -73,8 +73,8 @@ router.post('/upload', app.oauth.authorise(), function (req, res, next) {
  * response {Data}
  */
 router.get('/:fileId/download', function (req, res, next) {
-    var fileId = req.params.fileId;
-    var path = fileId;
+    const fileId = req.params.fileId;
+    const path = fileId;
     downloadFile(path, res, next);
 });
 
@@ -93,9 +93,9 @@ var uploadFile = function (filePath, userId) {
                 }
             });
             if (err) return reject(err);
-            var fileId = uuid.v1();
-            var path = userId + "." + fileId;
-            var params = {Bucket: AWS_BUCKET, Key: path, Body: data};
+            const fileId = uuid.v1();
+            const path = userId + "." + fileId;
+            const params = {Bucket: AWS_BUCKET, Key: path, Body: data};
 
             s3.S3.putObject(params, function (err, data) {
                 if (err) return reject(err);

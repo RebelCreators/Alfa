@@ -7,7 +7,7 @@
     "lib": "lib"
   },
   "dependencies": {
-    "afimport": "git+https://github.com/RebelCreators/AFImport.git#1.0.5",
+    "afimport": "git+https://github.com/RebelCreators/AFImport.git#1.0.6",
     "aws-sdk": "~2.6.12",
     "bcrypt-nodejs": "~0.0.3",
     "bluebird": "^3.4.6",
@@ -21,7 +21,8 @@
     "mustache": "2.3.0",
     "node-uuid": "~1.4.7",
     "oauth2-server": "~2.2.1",
-    "socket.io": "1.7.2",
+    "socket.io": "^2.0.4",
+    "socket.io-redis": "^5.2.0",
     "underscore": "1.8.3"
   },
   "author": "Lorenzo Stanton",

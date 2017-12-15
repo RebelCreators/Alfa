@@ -4,15 +4,16 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('Alfa:server');
-var http = require('http');
+const app = require('../app');
+const debug = require('debug')('Alfa:server');
+const http = require('http');
+const afimport = require("afimport");
 
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.ALFA_PORT);
 app.set('port', port);
 
 /**
@@ -87,4 +88,5 @@ function onListening() {
     ? 'pipe ' + addr
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
+  debug('Port ' + addr.port);
 }

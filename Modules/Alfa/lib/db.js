@@ -1,8 +1,8 @@
-var mongoose = require( 'mongoose' );
-var connection = mongoose.connection;
+const mongoose = require( 'mongoose' );
+const connection = mongoose.connection;
 
 module.exports.connect = function (url) {
-    var self = this;
+    const self = this;
     return new Promise(function (resolve, reject) {
         mongoose.connect(url);
         connection.on('connected', function () {

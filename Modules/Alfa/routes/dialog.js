@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var afimport = require("afimport");
-var app = afimport.require('app', {
+const express = require('express');
+const router = express.Router();
+const afimport = require("afimport");
+const app = afimport.require('app', {
     namespace: "com.rebelcreators.app"
 });
 
-var DialogModel = afimport.require("Dialog");
-var MessageModel = afimport.require("Message");
-var Socket = afimport.require("Socket");
+const DialogModel = afimport.require("Dialog");
+const MessageModel = afimport.require("Message");
+const Socket = afimport.require("Socket");
 
 /**
  * PUT /new
@@ -15,9 +15,9 @@ var Socket = afimport.require("Socket");
  * response {DialogModel}
  */
 router.put('/new', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var json = Object.assign({}, req.body);
-    var dialog = DialogModel.fromPublicJSON(json);
+    const currentUser = req.oauth.bearerToken.user;
+    const json = Object.assign({}, req.body);
+    const dialog = DialogModel.fromPublicJSON(json);
     dialog.saveNewDialog(currentUser).then(function (dialog) {
         if (!dialog) {
             res.statusCode = 500;
@@ -35,9 +35,9 @@ router.put('/new', app.oauth.authorise(), function (req, res, next) {
  * response {DialogModel}
  */
 router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var dialogId = req.params.dialogId;
-    var permissions = Object.assign({}, req.query.permissions);
+    const currentUser = req.oauth.bearerToken.user;
+    const dialogId = req.params.dialogId;
+    const permissions = Object.assign({}, req.query.permissions);
 
     DialogModel.dialogWithId(dialogId, permissions, currentUser).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
@@ -55,9 +55,9 @@ router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
  * response {DialogModel}
  */
 router.post('/ids', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var permissions = Object.assign({}, req.body.permissions);
-    var dialogIds = req.body.dialogIds;
+    const currentUser = req.oauth.bearerToken.user;
+    const permissions = Object.assign({}, req.body.permissions);
+    const dialogIds = req.body.dialogIds;
     DialogModel.dialogWithIds(dialogIds, permissions, currentUser).then(function (dialogs) {
         return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
     }).then(function (dialogs) {
@@ -81,9 +81,9 @@ router.post('/ids', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var permissions = Object.assign({}, req.query.permissions);
-    var userIds = req.query.userIds;
+    const currentUser = req.oauth.bearerToken.user;
+    const permissions = Object.assign({}, req.query.permissions);
+    const userIds = req.query.userIds;
     DialogModel.dialogsWithUsers(userIds, currentUser, permissions).then(function (dialogs) {
         return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
     }).then(function (dialogs) {
@@ -92,7 +92,7 @@ router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
         }
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
-            var dialog = dialogs[i];
+            const dialog = dialogs[i];
             dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
@@ -111,22 +111,22 @@ router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<MessageModel>}
  */
 router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var dialogId = req.params.dialogId;
-    var offset = parseInt(req.query.offset);
-    var limit = parseInt(req.query.limit);
-    var date = null;
-    var asc = parseInt(req.query.asc) || 0;
-    var timestamp = Date.parse(req.query.date)
+    const currentUser = req.oauth.bearerToken.user;
+    const dialogId = req.params.dialogId;
+    const offset = parseInt(req.query.offset);
+    const limit = parseInt(req.query.limit);
+    const date = null;
+    const asc = parseInt(req.query.asc) || 0;
+    const timestamp = Date.parse(req.query.date)
     if (isNaN(timestamp) == false) {
         date = new Date(timestamp);
 
     }
-    var permissions = Object.assign({}, req.query.permissions);
+    const permissions = Object.assign({}, req.query.permissions);
     DialogModel.messages(date, offset, limit, asc, dialogId, permissions, currentUser).then(function (messages) {
         var output = [];
         for (var i = 0; i < messages.length; i++) {
-            var message = messages[i].toJSON();
+            const message = messages[i].toJSON();
             output.push(message);
         }
         res.json(output);
@@ -142,12 +142,12 @@ router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, nex
  * response {Array.<MessageModel>}
  */
 router.get('/between/messages', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
+    const currentUser = req.oauth.bearerToken.user;
     var fromDate = null;
     var toDate = null;
-    var asc = parseInt(req.query.asc) || 0;
-    var fromTimestamp = Date.parse(req.query.fromDate);
-    var toTimestamp = Date.parse(req.query.toDate);
+    const asc = parseInt(req.query.asc) || 0;
+    const fromTimestamp = Date.parse(req.query.fromDate);
+    const toTimestamp = Date.parse(req.query.toDate);
     if (isNaN(fromTimestamp) == false) {
         fromDate = new Date(fromTimestamp);
     }
@@ -155,7 +155,7 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
         toDate = new Date(toTimestamp);
     }
     if (!toDate || !fromDate) {
-        var error = new Error("Dates not found");
+        const error = new Error("Dates not found");
         error.code = 404;
         next(error);
         return;
@@ -163,7 +163,7 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
     DialogModel.messagesBetweenDates(fromDate, toDate, asc, currentUser).then(function (messages) {
         var output = [];
         for (var i = 0; i < messages.length; i++) {
-            var message = messages[i].toJSON();
+            const message = messages[i].toJSON();
             output.push(message);
         }
         res.json(output);
@@ -177,7 +177,7 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
  * response {Array.<DialogModel>}
  */
 router.get('/current', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
+    const currentUser = req.oauth.bearerToken.user;
     DialogModel.dialogsForUser(currentUser).then(function (dialogs) {
         return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
     }).then(function (dialogs) {
@@ -186,7 +186,7 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
         }
         var dialogsOutput = [];
         for (var i = 0; i < dialogs.length; i++) {
-            var dialog = dialogs[i];
+            const dialog = dialogs[i];
             dialogsOutput.push(dialog.toJSON());
         }
         res.json(dialogsOutput);
@@ -203,11 +203,11 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.post('/add', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var json = Object.assign({}, req.body);
-    var user = json.userId;
-    var dialogId = json.dialogId;
-    var permissions = json.permissions;
+    const currentUser = req.oauth.bearerToken.user;
+    const json = Object.assign({}, req.body);
+    const user = json.userId;
+    const dialogId = json.dialogId;
+    const permissions = json.permissions;
     DialogModel.addUser(user, dialogId, currentUser, permissions).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
@@ -224,10 +224,10 @@ router.post('/add', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.post('/join', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var json = Object.assign({}, req.body);
-    var dialogId = json.dialogId;
-    var permissions = json.permissions;
+    const currentUser = req.oauth.bearerToken.user;
+    const json = Object.assign({}, req.body);
+    const dialogId = json.dialogId;
+    const permissions = json.permissions;
     DialogModel.join(dialogId, currentUser, permissions).then(function (dialog) {
         return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
     }).then(function (dialog) {
@@ -244,10 +244,10 @@ router.post('/join', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var json = Object.assign({}, req.body);
-    var dialogId = json.dialogId;
-    var permissions = json.permissions;
+    const currentUser = req.oauth.bearerToken.user;
+    const json = Object.assign({}, req.body);
+    const dialogId = json.dialogId;
+    const permissions = json.permissions;
     DialogModel.removeUser(currentUser._id, dialogId, currentUser, permissions).then(function (dialog) {
         res.send();
     }).catch(function (error) {
@@ -263,11 +263,11 @@ router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var json = Object.assign({}, req.body);
-    var user = json.userId;
-    var dialogId = json.dialogId;
-    var permissions = json.permissions;
+    const currentUser = req.oauth.bearerToken.user;
+    const json = Object.assign({}, req.body);
+    const user = json.userId;
+    const dialogId = json.dialogId;
+    const permissions = json.permissions;
     DialogModel.removeUser(user, dialogId, currentUser, permissions).then(function (dialog) {
         res.json(dialog.toJSON());
     }).catch(function (error) {
@@ -283,11 +283,11 @@ router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
-    var currentUser = req.oauth.bearerToken.user;
-    var json = Object.assign({}, req.body);
-    var dialogId = json.dialogId;
-    var _messsage = json.message;
-    var permissions = json.permissions;
+    const currentUser = req.oauth.bearerToken.user;
+    const json = Object.assign({}, req.body);
+    const dialogId = json.dialogId;
+    const _messsage = json.message;
+    const permissions = json.permissions;
     _messsage.dialogId = dialogId;
 
     if (!dialogId) {
@@ -295,7 +295,7 @@ router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
     }
 
     DialogModel.dialogForMessage(dialogId, currentUser, permissions).then(function (dialog) {
-        var message = MessageModel.fromPublicJSON(_messsage);
+        const message = MessageModel.fromPublicJSON(_messsage);
 
         return message.saveMessage(currentUser).then(function (message) {
 
