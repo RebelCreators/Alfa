@@ -1,88 +1,3 @@
-const start = function (express, afimportModule) {
-    const cluster = require('cluster');
-    const fs = require("fs");
-    const path = require("path");
-    const afimport = require("afimport");
-    afimport.include(path.join(__dirname, 'lib/Environment.js'), {
-        override: true
-    });
-var r = afimport.exportModule();
-    if (!process.env.ALFA_CLUSTERING) {
-        execute(express, afimportModule);
-        return;
-    }
-    // Pidfile contains master process PID.
-    var pidfile = 'master.pid'
-
-    // Map of workers (PID -> worker).
-    var workers = {};
-
-    if (cluster.isMaster) {
-        process.title = "com.rebelcreators.alfa.master"
-        process.env.ALFA_PORT -= 1;
-        const cpuCount = require('os').cpus().length;
-        for (var i = 0; i < cpuCount; i += 1) {
-            var worker = cluster.fork(process.env);
-            var pid = worker.process.pid;
-            workers[pid] = worker;
-        }
-
-        cluster.on('died', function (worker) {
-            console.log('Worker ' + process.pid + ' died.');
-            // Remove dead worker.
-            delete workers[process.pid];
-
-            if (worker.exitedAfterDisconnect) {
-                return;
-            }
-
-            // Restart on worker death.
-
-            console.log('Worker ' + process.pid + ' restarting.');
-            worker = cluster.fork();
-            workers[process.pid] = worker;
-        });
-
-        // Attach signal handler to kill workers
-        // when master is terminated.
-
-        function cleanup() {
-            console.log('Master stopping.');
-
-            for (var pid in workers) {
-                console.log('Kill worker: ' + pid);
-                process.kill(pid)
-            }
-
-            // Remove pidfile.
-
-            fs.unlinkSync(pidfile);
-            workers = {};
-
-            process.exit(0);
-        }
-
-        // Master can be terminated by either SIGTERM
-        // or SIGINT. The latter is used by CTRL+C on console.
-
-        process.on('SIGTERM', cleanup);
-        process.on('SIGINT', cleanup);
-
-        // Write pidfile.
-
-        fs.writeFileSync(pidfile, process.pid);
-    } else {
-
-        process.title = "com.rebelcreators.alfa.worker"
-        process.on('SIGTERM', function () {
-            console.log('Stopping worker ' + process.pid);
-        });
-
-        console.log('Worker ' + process.pid + ' started.');
-
-        execute(express, afimportModule);
-    }
-};
 
 const execute = function (express, afimportModule) {
     const app = express;
@@ -198,4 +113,84 @@ const execute = function (express, afimportModule) {
     module.exports.afimport = afimport.exportModule();
 };
 
-module.exports = start;
+module.exports = execute;
+module.exports.cluster = function (callback) {
+    const cluster = require('cluster');
+    const fs = require("fs");
+    const path = require("path");
+    const afimport = require("afimport");
+    afimport.include(path.join(__dirname, 'lib/Environment.js'), {
+        override: true
+    });
+// Pidfile contains master process PID.
+    var pidfile = 'master.pid'
+
+// Map of workers (PID -> worker).
+    var workers = {};
+
+    if (cluster.isMaster) {
+        process.env.ALFA_PORT = 2999;
+        process.title = "com.rebelcreators.alfa.master"
+        const cpuCount = require('os').cpus().length;
+        for (var i = 0; i < cpuCount; i += 1) {
+            var worker = cluster.fork();
+            var pid = worker.process.pid;
+            workers[pid] = worker;
+        }
+
+        cluster.on('died', function (worker) {
+            console.log('Worker ' + process.pid + ' died.');
+            // Remove dead worker.
+            delete workers[process.pid];
+
+            if (worker.exitedAfterDisconnect) {
+                return;
+            }
+
+            // Restart on worker death.
+
+            console.log('Worker ' + process.pid + ' restarting.');
+            worker = cluster.fork();
+            workers[process.pid] = worker;
+        });
+
+        // Attach signal handler to kill workers
+        // when master is terminated.
+
+        function cleanup() {
+            console.log('Master stopping.');
+
+            for (var pid in workers) {
+                console.log('Kill worker: ' + pid);
+                process.kill(pid)
+            }
+
+            // Remove pidfile.
+
+            fs.unlinkSync(pidfile);
+            workers = {};
+
+            process.exit(0);
+        }
+
+        // Master can be terminated by either SIGTERM
+        // or SIGINT. The latter is used by CTRL+C on console.
+
+        process.on('SIGTERM', cleanup);
+        process.on('SIGINT', cleanup);
+
+        // Write pidfile.
+
+        fs.writeFileSync(pidfile, process.pid);
+    } else {
+
+        process.title = "com.rebelcreators.alfa.worker"
+        process.on('SIGTERM', function () {
+            console.log('Stopping worker ' + process.pid);
+        });
+
+        console.log('Worker ' + process.pid + ' started.');
+
+        callback(module.exports);
+    }
+};

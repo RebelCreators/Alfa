@@ -7,7 +7,6 @@ const DialogModel = afimport.require('Dialog');
 
 const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
 const redis = require('socket.io-redis');
-
 /**
  * connect socket
  */
@@ -76,14 +75,21 @@ const connect = function () {
 
     io.on('connection', function (socket) {
         var id = socket.client.id;
-        io.of('/' + id).adapter.customHook = (data, cb) => {
-            io.to(id).emit('com.rebel.creators.message', data);
-            cb();
-        }
+        console.log("socket connected");
     });
 
     io.listen(process.env.ALFA_SOCKET_PORT);
-    io.adapter(redis(redisConfig));
+    var adapter = redis(redisConfig);
+    io.adapter(adapter);
+
+    adapter.pubClient.on('error', function(error){
+        console.log("error" + error);
+
+    });
+    adapter.subClient.on('error', function(error){
+        console.log("error" + error);
+
+    });
 };
 
 /**
@@ -100,7 +106,7 @@ const sendMessageToDevice = function (message, device) {
     if (!clientId) {
         return;
     }
-    io.of("/" + clientId).adapter.customRequest(message);
+    io.to(clientId).emit("com.rebel.creators.message", message);
 };
 
 /**
