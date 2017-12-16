@@ -6,7 +6,7 @@ const logger = afimport.require("logger");
 module.exports.connect = function (url) {
     const self = this;
     return new Promise(function (resolve, reject) {
-        mongoose.connect(url);
+        mongoose.connect(url, { useMongoClient: true });
         connection.on('connected', function () {
             if (mongoose.connection.readyState !== 1) {
                 return reject(new Error("DataBase disconnected"));

@@ -11,6 +11,16 @@ Install [mongo DB](https://docs.mongodb.com/manual/installation/)
 
 Install [nodeJS](install node js windows)
 
+Install and set up a redis server.
+https://medium.com/@petehouston/install-and-config-redis-on-mac-os-x-via-homebrew-eb8df9a4f298
+
+Environment Variables are set in a alfo.json file
+that should be copied into ~/.env/alfa.json (This file should not be checked in)
+
+ssh</p>
+`scp ~/.env/alfa_local_copy.json user@host:~/.env/alfa.json`
+
+
 Clone Alfa Repo.
 
 **Use the terminal**<br>

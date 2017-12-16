@@ -8,13 +8,13 @@ const alfa_env = require(path.resolve(os.homedir()) + path.sep + ".env/alfa.json
 
  {
 "ALFA_PORT":####,
-"ALFA_REDIS_HOST":"####",
+"ALFA_REDIS_HOST":"#############",
 "ALFA_REDIS_PORT":####,
 "ALFA_SOCKET_PORT":####,
-"ALFA_CLIENT_SECRET":"####",
-"ALFA_CLIENT_ID":"####",
-"ALFA_DB":"####",
-"DEBUG": "Alfa:server"
+"ALFA_CLIENT_SECRET":"###########",
+"ALFA_CLIENT_ID":"########",
+"ALFA_DB":"###########",
+"DEBUG": "Alfa:*"
 }
  *
  */
