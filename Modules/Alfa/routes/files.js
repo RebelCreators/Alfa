@@ -1,7 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const fs = require("fs");
 const afimport = require("afimport");
+const router = afimport.require("ExpressRouter", {
+    namespace: "com.rebelcreators.Router"
+});
+const fs = require("fs");
 const app = afimport.require('app', {
     namespace: "com.rebelcreators.app"
 });
