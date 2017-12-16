@@ -4,7 +4,7 @@ const Logger = function(name) {
 
 Logger.error = Logger("Alfa:ERROR");
 Logger.info = Logger("Alfa:INFO");
-Logger.DEBUG = Logger("Alfa:DEBUG");
-Logger.WARN = Logger("Alfa:WARN");
+Logger.debug = Logger("Alfa:DEBUG");
+Logger.warn = Logger("Alfa:WARN");
 
 module.exports = Logger;
