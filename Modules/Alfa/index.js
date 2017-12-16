@@ -9,7 +9,7 @@ afimport.include(path.join(__dirname, 'lib/logger.js'), {
 const logger = afimport.require("logger");
 
 const execute = function (express, afimportModule) {
-    const app = express;
+    const app = express();
 
     afimport.include([path.join(__dirname, 'lib/**/*'), path.join(__dirname, 'models/**/*')]);
 
@@ -34,6 +34,9 @@ const execute = function (express, afimportModule) {
 //provide app to be included in afimport
     afimport.provide(app, "app", {
         namespace: "com.rebelcreators.app"
+    });
+    afimport.provide(express.Router(), "ExpressRouter", {
+        namespace: "com.rebelcreators.Router"
     });
 
     app.use(helmet());

@@ -1,6 +1,7 @@
-const express = require('express');
-const router = express.Router();
 const afimport = require("afimport");
+const router = afimport.require("ExpressRouter", {
+    namespace: "com.rebelcreators.Router"
+});
 
 /**
  * The routing-layer
