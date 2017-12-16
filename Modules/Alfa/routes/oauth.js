@@ -1,7 +1,7 @@
 const afimport = require("afimport");
 const router = afimport.require("ExpressRouter", {
     namespace: "com.rebelcreators.Router"
-});
+})();
 const app = afimport.require('app', {
     namespace: "com.rebelcreators.app"
 });

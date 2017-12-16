@@ -35,7 +35,7 @@ const execute = function (express, afimportModule) {
     afimport.provide(app, "app", {
         namespace: "com.rebelcreators.app"
     });
-    afimport.provide(express.Router(), "ExpressRouter", {
+    afimport.provide(express.Router, "ExpressRouter", {
         namespace: "com.rebelcreators.Router"
     });
 
@@ -119,7 +119,7 @@ const execute = function (express, afimportModule) {
 
     module.exports.afimport = afimport.exportModule();
     module.exports.app = app;
-    
+
     require("./server.js")(app);
 
     return module.exports.afimport;
