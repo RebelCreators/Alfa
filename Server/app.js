@@ -1,4 +1,8 @@
-var alfa = require('alfa');
-var express = require('express');
-var app = module.exports = express();
-alfa(app);
+const alfa = require('alfa');
+const express = require('express');
+const app = module.exports = express();
+const afimport = require("afimport");
+
+alfa.cluster(function (alfa) {
+    alfa(app, afimport.exportModule());
+});

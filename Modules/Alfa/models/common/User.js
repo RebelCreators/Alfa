@@ -1,8 +1,8 @@
-var afimport = require("afimport");
-var Shared = afimport.require("shared");
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var bcrypt = require('bcrypt-nodejs');
+const afimport = require("afimport");
+const Shared = afimport.require("shared");
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const bcrypt = require('bcrypt-nodejs');
 
 /**
  * The data-layer
@@ -24,7 +24,7 @@ var bcrypt = require('bcrypt-nodejs');
  * @readonly
  * @enum {string}
  */
-var UserGenderEnum = {
+const UserGenderEnum = {
     /**
      * none
      */
@@ -43,7 +43,7 @@ var UserGenderEnum = {
  *
  * @constructor UserModel
  */
-var UserSchema = new Schema({
+const UserSchema = new Schema({
         /**
          * @memberof module:models/UserModel~UserModel
          * @instance
@@ -363,5 +363,5 @@ UserSchema.statics.updateUser = function (json) {
 
 mongoose.model('UserModel', UserSchema);
 
-var UserModel = mongoose.model('UserModel');
+const UserModel = mongoose.model('UserModel');
 module.exports = UserModel;

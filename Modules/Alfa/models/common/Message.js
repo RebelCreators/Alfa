@@ -1,7 +1,7 @@
-var afimport = require("afimport");
-var Shared = afimport.require("shared");
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const afimport = require("afimport");
+const Shared = afimport.require("shared");
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 /**
  * The data-layer
@@ -12,7 +12,7 @@ var Schema = mongoose.Schema;
  *
  * @constructor PayloadModel
  */
-var PayloadSchema = new Schema({
+const PayloadSchema = new Schema({
     /**
      * @memberof module:models/MessageModel~PayloadModel
      * @instance
@@ -39,7 +39,7 @@ var PayloadSchema = new Schema({
  *
  * @constructor MessageModel
  */
-var MessageSchema = new Schema({
+const MessageSchema = new Schema({
     /**
      * @memberof module:models/MessageModel~MessageModel
      * @instance
@@ -184,5 +184,5 @@ MessageSchema.statics.messagesBetweenDates = function (fromDate, toDate, asc, di
 
 mongoose.model('MessageModel', MessageSchema);
 
-var MessageModel = mongoose.model('MessageModel');
+const MessageModel = mongoose.model('MessageModel');
 module.exports = MessageModel;

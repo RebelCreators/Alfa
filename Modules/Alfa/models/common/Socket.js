@@ -1,16 +1,18 @@
-var afimport = require("afimport");
-var Shared = afimport.require("shared");
-var io = require('socket.io')();
-var oauth = afimport.require('AccessToken');
-var DeviceModel = afimport.require('Device');
-var DialogModel = afimport.require('Dialog');
+const afimport = require("afimport");
+const Shared = afimport.require("shared");
+const io = require('socket.io')();
+const oauth = afimport.require('AccessToken');
+const DeviceModel = afimport.require('Device');
+const DialogModel = afimport.require('Dialog');
 
-var clients = {};
+const logger = afimport.require("logger");
 
+const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
+const redis = require('socket.io-redis');
 /**
  * connect socket
  */
-var connect = function () {
+const connect = function () {
     io.use(function (socket, next) {
         try {
             var query = socket.handshake.query;
@@ -56,7 +58,6 @@ var connect = function () {
                 var currentUser = socket.client.token.user;
                 var deviceToken = query.deviceToken;
                 var id = socket.client.id;
-                delete clients[id];
                 DeviceModel.deviceWithToken(deviceToken).then(function (device) {
                     if (device.user._id != currentUser._id) {
                         return;
@@ -65,20 +66,32 @@ var connect = function () {
                     return device.updateDevice(currentUser).then(function () {
 
                     });
+                }).catch(function (error) {
                 });
             });
             next();
         } catch (e) {
             next(e);
         }
+
     });
 
     io.on('connection', function (socket) {
         var id = socket.client.id;
-        clients[id] = socket;
+        logger.info("socket connected");
     });
 
-    io.listen(5225);
+    io.listen(process.env.ALFA_SOCKET_PORT);
+    var adapter = redis(redisConfig);
+    io.adapter(adapter);
+
+    adapter.pubClient.on('error', function (error) {
+        logger.error("error" + error);
+
+    });
+    adapter.subClient.on('error', function (error) {
+        logger.error("error" + error);
+    });
 };
 
 /**
@@ -87,13 +100,15 @@ var connect = function () {
  * @param {object} message
  * @param {DeviceModel} device
  */
-var sendMessageToDevice = function (message, device) {
-    var clientId = device.clientId;
-    if (clientId) {
-        if (clients[clientId]) {
-            clients[clientId].emit('com.rebel.creators.message', message);
-        }
+const sendMessageToDevice = function (message, device) {
+    if (!message || !device) {
+        return;
     }
+    const clientId = device.clientId;
+    if (!clientId) {
+        return;
+    }
+    io.to(clientId).emit("com.rebel.creators.message", message);
 };
 
 /**
@@ -102,12 +117,12 @@ var sendMessageToDevice = function (message, device) {
  * @param {object} message
  * @param {DialogModel} dialog
  */
-var send = function (message, dialog) {
+const send = function (message, dialog) {
     DeviceModel.devicesForUsers(dialog.currentUsers).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
             sendMessageToDevice(message, device);
         });
-    })
+    });
 };
 
 module.exports.send = send;

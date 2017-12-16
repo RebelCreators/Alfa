@@ -1,10 +1,10 @@
-var express = require('express');
-var router = express.Router();
-var afimport = require("afimport");
-var app = afimport.require('app', {
+const express = require('express');
+const router = express.Router();
+const afimport = require("afimport");
+const app = afimport.require('app', {
     namespace: "com.rebelcreators.app"
 });
-var OauthModel = afimport.require("oauth2.0");
+const OauthModel = afimport.require("oauth2.0");
 
 router.all('*', app.oauth.authorise(), function (req, res, next) {
     next();

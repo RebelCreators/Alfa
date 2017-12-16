@@ -1,8 +1,8 @@
-var afimport = require("afimport");
-var Shared = afimport.require("shared");
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var _ = require('underscore');
+const afimport = require("afimport");
+const Shared = afimport.require("shared");
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const _ = require('underscore');
 
 /**
  * The data-layer
@@ -13,7 +13,7 @@ var _ = require('underscore');
  *
  * @constructor DialogTipModel
  */
-var DialogTipSchema = new Schema({
+const DialogTipSchema = new Schema({
     /**
      * @memberof module:models/DialogTipModel~DialogTipModel
      * @instance
@@ -79,5 +79,5 @@ DialogTipSchema.statics.setTipForDialog = function (dialogId, messageId, userId)
 
 mongoose.model('DialogTipModel', DialogTipSchema);
 
-var DialogTipModel = mongoose.model('DialogTipModel');
+const DialogTipModel = mongoose.model('DialogTipModel');
 module.exports = DialogTipModel;
