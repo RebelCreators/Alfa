@@ -220,7 +220,7 @@ DialogSchema.methods.saveNewDialog = function (currentUser) {
         self.save(function (err) {
             if (err) return reject(err);
 
-            DialogModel.populate(self, "_id allUsers creator", function (err, dialog) {
+            DialogModel.populate(self, "allUsers creator", function (err, dialog) {
                 if (err) return reject(err);
                 resolve(dialog);
             });
