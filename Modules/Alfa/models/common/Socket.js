@@ -9,8 +9,16 @@ const logger = afimport.require("logger");
 
 const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
 const redis = require('socket.io-redis');
+
+/**
+ * DB Module
+ * @module Socket
+ */
+
 /**
  * connect socket
+ *
+ * @memberof module:Socket
  */
 const connect = function () {
     io.use(function (socket, next) {
@@ -96,6 +104,7 @@ const connect = function () {
 
 /**
  * Sends message to device.
+ * @memberof module:Socket
  *
  * @param {object} message
  * @param {DeviceModel} device
@@ -114,6 +123,8 @@ const sendMessageToDevice = function (message, device) {
 /**
  * Sends message to dialog
  *
+ * @memberof module:Socket
+ *
  * @param {object} message
  * @param {DialogModel} dialog
  */
@@ -125,5 +136,16 @@ const send = function (message, dialog) {
     });
 };
 
+
+/**
+ *
+ * @type {module:Socket.send}
+ */
 module.exports.send = send;
+
+
+/**
+ * 
+ * @type {module:Socket.connect}
+ */
 module.exports.connect = connect;

@@ -3,6 +3,19 @@ const connection = mongoose.connection;
 const afimport = require("afimport");
 const logger = afimport.require("logger");
 
+
+/**
+ * DB Module
+ * @module DB
+ */
+
+
+/**
+ * @function connect
+ * @memberof module:DB
+ * @param {string} url
+ * @return {Promise}
+ */
 module.exports.connect = function (url) {
     const self = this;
     return new Promise(function (resolve, reject) {
@@ -26,6 +39,7 @@ connection.on('disconnected', function () {
     logger.info('DB connection disconnected');
 });
 
+
 // If the Node process ends, close the Mongoose connection
 process.on('SIGINT', function() {
     connection.close(function () {
@@ -34,4 +48,9 @@ process.on('SIGINT', function() {
     });
 });
 
+/**
+ * @function db
+ * @type {Connection}
+ * @memberof module:DB
+ */
 module.exports.db = connection;

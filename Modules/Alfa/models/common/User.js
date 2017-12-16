@@ -6,12 +6,12 @@ const bcrypt = require('bcrypt-nodejs');
 
 /**
  * The data-layer
- * @module models/UserModel
+ * @module models
  */
 
 /**
  * This callback is used to get a user with credentials.
- * @callback models/UserModel~GetUserCallBack
+ * @callback models~GetUserCallBack
  * @param {Error} error
  * @param {UserModel} userModel
  */
@@ -19,7 +19,7 @@ const bcrypt = require('bcrypt-nodejs');
 /**
  * User Gender Enum.
  *
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @readonly
  * @enum {string}
@@ -45,21 +45,21 @@ const UserGenderEnum = {
  */
 const UserSchema = new Schema({
         /**
-         * @memberof module:models/UserModel~UserModel
+         * @memberof module:models~UserModel
          * @instance
          *
          * @type {string}
          */
         firstName: String,
         /**
-         * @memberof module:models/UserModel~UserModel
+         * @memberof module:models~UserModel
          * @instance
          *
          * @type {string}
          */
         lastName: String,
         /**
-         * @memberof module:models/UserModel~UserModel
+         * @memberof module:models~UserModel
          * @instance
          *
          * @type {string}
@@ -69,7 +69,7 @@ const UserSchema = new Schema({
             required: true
         },
         /**
-         * @memberof module:models/UserModel~UserModel
+         * @memberof module:models~UserModel
          * @instance
          *
          * @type {string}
@@ -79,14 +79,14 @@ const UserSchema = new Schema({
             required: true
         },
         /**
-         * @memberof module:models/UserModel~UserModel
+         * @memberof module:models~UserModel
          * @instance
          *
          * @type {string}
          */
         avatar: String,
         /**
-         * @memberof module:models/UserModel~UserModel
+         * @memberof module:models~UserModel
          * @instance
          *
          * @default UserGenderEnum.NONE
@@ -99,7 +99,7 @@ const UserSchema = new Schema({
             default: UserGenderEnum.NONE
         },
         /**
-         * @memberof module:models/UserModel~UserModel
+         * @memberof module:models~UserModel
          * @instance
          *
          * @type {Object}
@@ -123,7 +123,7 @@ UserSchema.statics.minimumPasswordLength = 4;
 /**
  *
  * @function fromPublicJSON
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param {Object} json
  * @return {UserModel}
@@ -144,7 +144,7 @@ UserSchema.statics.fromPublicJSON = function (json) {
 /**
  *
  * @function validateUser
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  * @instance
  *
  * @return {Promise}
@@ -171,7 +171,7 @@ UserSchema.methods.validateUser = function () {
 /**
  *
  * @function saveNewUser
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  * @instance
  *
  * @return {Promise.<UserModel, Error>}
@@ -195,7 +195,7 @@ UserSchema.methods.saveNewUser = function () {
 /**
  *
  * @function getUser
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param {string} username
  * @param {string} password
@@ -241,7 +241,7 @@ UserSchema.statics.getUser$ = function (username, password, callback) {
 /**
  *
  * @function hashPassword
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param password
  * @return {Promise.<string, Error>}
@@ -261,7 +261,7 @@ UserSchema.statics.hashPassword = function (password) {
 /**
  *
  * @function getUserById
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param {string} userId
  * @return {Promise.<UserModel, Error>}
@@ -280,7 +280,7 @@ UserSchema.statics.getUserById = function (userId) {
 /**
  *
  * @function getUserByIds
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param {Array.<string>} userIds
  * @return {Promise.<Array.<UserModel>, Error>}
@@ -299,7 +299,7 @@ UserSchema.statics.getUsersByIds = function (userIds) {
 /**
  *
  * @function getUserByUserName
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param {string} userName
  * @return {Promise.<UserModel, Error>}
@@ -321,7 +321,7 @@ UserSchema.statics.getUserByUserName = function (userName) {
 /**
  *
  * @function getUserByUserNames
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param {Array.<string>} userNames
  * @return {Promise.<Array.<UserModel>, Error>}
@@ -340,7 +340,7 @@ UserSchema.statics.getUsersByUserNames = function (userNames) {
 /**
  *
  * @function updateUser
- * @memberof module:models/UserModel~UserModel
+ * @memberof module:models~UserModel
  *
  * @param {Object} json
  * @return {Promise.<UserModel, Error>}

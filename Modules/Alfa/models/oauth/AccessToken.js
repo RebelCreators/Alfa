@@ -4,12 +4,13 @@ const afimport = require("afimport");
 const logger = afimport.require("logger");
 
 /**
- * @ref oauth2.0
+ * The auth-layer
+ * @module models/AccessToken
  */
 
 /**
  *
- * @type {AccessTokenSchema}
+ * @constructor AccessTokenModel
  */
 const AccessTokenSchema = new Schema({
     token : String,
@@ -25,6 +26,8 @@ const AccessTokenSchema = new Schema({
 
 /**
  *
+ * @memberof module:models/AccessToken
+ *
  * @param accessToken
  * @param callback
  */
@@ -38,6 +41,7 @@ AccessTokenSchema.statics.revokeAccessToken = function (accessToken, callback) {
 };
 
 /**
+ * @memberof module:models/AccessToken
  *
  * @param accessToken
  * @param clientId
@@ -58,6 +62,8 @@ AccessTokenSchema.statics.saveAccessToken = function(accessToken, clientId, expi
 
 /**
  *
+ * @memberof module:models/AccessToken
+ *
  * @param bearerToken
  * @param callback
  */
@@ -70,8 +76,5 @@ AccessTokenSchema.statics.getAccessToken = function(bearerToken, callback) {
 
 mongoose.model('AccessToken', AccessTokenSchema);
 
-/**
- * @constructor
- */
 const AccessTokenModel = mongoose.model('AccessToken');
 module.exports = AccessTokenModel;

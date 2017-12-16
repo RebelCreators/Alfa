@@ -4,12 +4,15 @@ const User = afimport.require("User");
 const AccessToken = afimport.require("AccessToken");
 const RefreshToken = afimport.require("RefreshToken");
 
-/**
- * @ref oauth2.0
- */
 
+/**
+ * @private
+ */
 module.exports.getUser = User.getUser$;
 
+/**
+ * @private
+ */
 module.exports.getClient = function (clientId, clientSecret, callback) {
     if (clientId == process.env.ALFA_CLIENT_ID && clientSecret == process.env.ALFA_CLIENT_SECRET) {
 
@@ -20,6 +23,9 @@ module.exports.getClient = function (clientId, clientSecret, callback) {
     callback(error, null);
 };
 
+/**
+ * @private
+ */
 module.exports.grantTypeAllowed = function (clientId, grantType, callback) {
     if (grantType.toLowerCase() == "password" || grantType.toLowerCase() == "refresh_token") {
         return callback(null, true);
@@ -28,12 +34,32 @@ module.exports.grantTypeAllowed = function (clientId, grantType, callback) {
     callback(null, false);
 };
 
+/**
+ * @private
+ */
 module.exports.saveRefreshToken = RefreshToken.saveRefreshToken;
+
+/**
+ * @private
+ */
 module.exports.revokeRefreshToken = RefreshToken.revokeRefreshToken;
+
+/**
+ * @private
+ */
 module.exports.getRefreshToken = RefreshToken.getRefreshToken;
 
+/**
+ * @private
+ */
 module.exports.revokeAccessToken = AccessToken.revokeAccessToken;
 
+/**
+ * @private
+ */
 module.exports.saveAccessToken = AccessToken.saveAccessToken;
 
+/**
+ * @private
+ */
 module.exports.getAccessToken = AccessToken.getAccessToken;

@@ -5,11 +5,7 @@ const logger = afimport.require("logger");
 
 
 /**
- * @ref oauth2.0
- */
-
-/**
- *
+ * @private
  * @type {RefreshTokenSchema}
  */
 const RefreshTokenSchema = new Schema({
@@ -20,7 +16,7 @@ const RefreshTokenSchema = new Schema({
 });
 
 /**
- *
+ * @private
  * @param refreshToken
  * @param clientId
  * @param expires
@@ -39,7 +35,7 @@ RefreshTokenSchema.statics.saveRefreshToken = function (refreshToken, clientId, 
 };
 
 /**
- *
+ * @private
  * @param refreshToken
  * @param callback
  */
@@ -53,7 +49,7 @@ RefreshTokenSchema.statics.revokeRefreshToken = function (refreshToken, callback
 };
 
 /**
- *
+ * @private
  * @param refreshToken
  * @param callback
  */
@@ -66,8 +62,5 @@ RefreshTokenSchema.statics.getRefreshToken = function (refreshToken, callback) {
 
 mongoose.model('RefreshToken', RefreshTokenSchema);
 
-/**
- * @constructor
- */
 const RefreshTokenModel = mongoose.model('RefreshToken');
 module.exports = RefreshTokenModel;

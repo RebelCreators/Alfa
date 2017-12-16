@@ -1,14 +1,54 @@
-const Shared = function () {
-}
+const afimport = require("afimport");
+const logger = afimport.require("logger");
 
+
+/**
+ * Shared
+ * @module Shared
+ */
+
+
+/**
+ *
+ * Gets the first value in an array.
+ *
+ * @function first
+ * @memberof module:Shared
+ *
+ * @param {Array<T>} arr
+ * @return {?T}
+ */
 module.exports.first = function (arr) {
     return arr.length > 0 ? arr[0] : null;
 };
 
+
+/**
+ *
+ * Gets the last value in an array.
+ *
+ * @function last
+ * @memberof module:Shared
+ *
+ * @param {Array<T>} arr
+ * @return {?T}
+ */
 module.exports.last = function (arr) {
     return arr.length > 0 ? arr[arr.length - 1] : null;
 };
 
+
+/**
+ * Maps an object's keys and values to a new object matching keys of the second object passed in.
+ *
+ * @function caseInsensitiveMap
+ * @memberof module:Shared
+ *
+ * @param {Object<T>} from
+ * @param {Object<T>} object
+ * @param {boolean} includeNUll decides if null values should be ignored or explicitly added
+ * @return {Object<T>}
+ */
 module.exports.caseInsensitiveMap = function (from, object, includeNUll) {
     var lowerCased = {};
     var newObj = {};
@@ -26,18 +66,17 @@ module.exports.caseInsensitiveMap = function (from, object, includeNUll) {
     return newObj;
 };
 
-module.exports.printObj = function (obj) {
-    console.log("" + JSON.stringify(obj));
-};
 
-module.exports.rcmap = function (obj, func) {
-    var newObj = {};
-    for (key in obj) {
-        if (func(key)) {
-            newObj[key] = obj[key];
-        }
-    }
-    return newObj;
+/**
+ *
+ * @function printObj
+ * @memberof module:Shared
+ *
+ * Prints an object's keys and values as JSON
+ * @param {string} obj
+ */
+module.exports.printObj = function (obj) {
+    logger.info("" + JSON.stringify(obj));
 };
 
 
@@ -54,25 +93,17 @@ function tickShim(fn) {
     setTimeout(fn, 1);
 }
 
-// executes the iter function for the first object key immediately, can be
-// tweaked to instead defer immediately
-module.exports.asyncForEach = function (object, iter, completion) {
-    var keys = Object.keys(object), offset = 0;
 
-    (function next() {
-        // invoke the iterator function
-        iter.call(object, keys[offset], object[keys[offset]], object);
-
-        if (++offset < keys.length) {
-            tick(next);
-        } else {
-            if (completion) {
-                completion.call(object);
-            }
-        }
-    })();
-};
-
+/**
+ *
+ * Asynchronously iterates an array or object keys
+ * @function asyncForEachAsync
+ * @memberof module:Shared
+ *
+ * @param {Array<T>|Object<T>} object
+ * @param {function(T)} iter
+ * @param {function(Object<T>)} completion
+ */
 module.exports.asyncForEachAsync = function (object, iter, completion) {
     var keys = Object.keys(object), offset = 0;
     if (!keys || keys.length == 0) {
@@ -95,6 +126,16 @@ module.exports.asyncForEachAsync = function (object, iter, completion) {
     })();
 };
 
+
+/**
+ * Initializes a prototype with a superclass
+ *
+ * @function initClass
+ * @memberof module:Shared
+ * 
+ * @param Clazz
+ * @param Superclass
+ */
 module.exports.initClass = function (Clazz, Superclass) {
     if (Superclass) {
         Clazz.prototype = Object.create(Superclass.prototype);

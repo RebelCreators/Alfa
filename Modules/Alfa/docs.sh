@@ -1,4 +1,3 @@
 #!/bin/bash
 
-jsdoc ./models -r ./routes/index.js ./node_modules/afimport/index.js -d ./docs
-
+rm -Rf docs && jsdoc ./models -r ./lib -r ./routes/index.js ./node_modules/afimport/index.js ./server.js -d ./docs

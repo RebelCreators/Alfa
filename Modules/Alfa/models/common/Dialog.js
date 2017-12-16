@@ -282,7 +282,7 @@ DialogSchema.statics.addUser = function (userId, dialogId, currentUser, permissi
 /**
  * @function dialogsForUser
  * @memberof module:models/DialogModel~DialogModel
- * 
+ *
  * @param {UserModel} user
  * @return {Promise.<Array.<DialogModel, Error>>}
  */

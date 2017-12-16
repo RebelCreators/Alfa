@@ -53,3 +53,11 @@ region=us-west-1
 ```
 
   Create a directory named "tmp" in the server directory,  where the app.js file is located.
+  
+
+## Docs
+
+To create docs run this in the Modules/Alfa directory.
+`jsdoc ./models -r ./lib -r ./routes/index.js ./node_modules/afimport/index.js ./server.js -d ./docs`
+
+Or run the `docs.sh` script in the Modules/Alfa directory.
