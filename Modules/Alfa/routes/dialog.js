@@ -116,12 +116,11 @@ router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, nex
     const dialogId = req.params.dialogId;
     const offset = parseInt(req.query.offset);
     const limit = parseInt(req.query.limit);
-    const date = null;
+    var date = null;
     const asc = parseInt(req.query.asc) || 0;
     const timestamp = Date.parse(req.query.date)
     if (isNaN(timestamp) == false) {
         date = new Date(timestamp);
-
     }
     const permissions = Object.assign({}, req.query.permissions);
     DialogModel.messages(date, offset, limit, asc, dialogId, permissions, currentUser).then(function (messages) {
