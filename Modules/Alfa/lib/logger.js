@@ -1,5 +1,6 @@
+var debug = require('debug');
 const Logger = function(name) {
-    return require('debug')(name);
+    return debug(name);
 };
 
 Logger.error = Logger("Alfa:ERROR");
