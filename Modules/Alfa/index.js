@@ -118,7 +118,8 @@ const execute = function (express, afimportModule) {
     afimport.require("Socket").connect();
 
     module.exports.afimport = afimport.exportModule();
-
+    module.exports.app = app;
+    
     require("./server.js")(app);
 
     return module.exports.afimport;
