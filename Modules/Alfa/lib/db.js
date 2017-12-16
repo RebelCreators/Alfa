@@ -1,5 +1,7 @@
 const mongoose = require( 'mongoose' );
 const connection = mongoose.connection;
+const afimport = require("afimport");
+const logger = afimport.require("logger");
 
 module.exports.connect = function (url) {
     const self = this;
@@ -9,10 +11,11 @@ module.exports.connect = function (url) {
             if (mongoose.connection.readyState !== 1) {
                 return reject(new Error("DataBase disconnected"));
             }
-            console.log('Mongoose default connection open to ' + url);
+            logger.info("DB connected");
             resolve()
         });
         connection.on('error',function (err) {
+            logger.error("DB connection error" + err);
             reject(err);
         });
     });
@@ -20,13 +23,13 @@ module.exports.connect = function (url) {
 
 // When the connection is disconnected
 connection.on('disconnected', function () {
-    console.log('Mongoose default connection disconnected');
+    logger.info('DB connection disconnected');
 });
 
 // If the Node process ends, close the Mongoose connection
 process.on('SIGINT', function() {
     connection.close(function () {
-        console.log('Mongoose default connection disconnected through app termination');
+        logger.warn('DB connection disconnected through app termination');
         process.exit(0);
     });
 });

@@ -1,11 +1,15 @@
+const path = require("path");
+const afimport = require("afimport");
+afimport.include(path.join(__dirname, 'lib/environment.js'), {
+    override: true
+});
+afimport.include(path.join(__dirname, 'lib/logger.js'), {
+    override: true
+});
+const logger = afimport.require("logger");
 
 const execute = function (express, afimportModule) {
     const app = express;
-    const path = require("path");
-    const afimport = require("afimport");
-    if (afimportModule) {
-        afimport.importModule(afimportModule);
-    }
 
     afimport.include([path.join(__dirname, 'lib/**/*'), path.join(__dirname, 'models/**/*')]);
 
@@ -56,9 +60,9 @@ const execute = function (express, afimportModule) {
     app.use(app.oauth.errorHandler());
 
     DB.connect(url).then(function () {
-        console.log("DB connected");
+        logger.info("App - connected DB");
     }).catch(function (error) {
-        console.log("error " + error);
+        logger.error("error " + error);
     });
 
     app.all('/oauth/token', app.oauth.grant());
@@ -111,17 +115,16 @@ const execute = function (express, afimportModule) {
     afimport.require("Socket").connect();
 
     module.exports.afimport = afimport.exportModule();
+
+    require("./server.js")(app);
+
+    return module.exports.afimport;
 };
 
 module.exports = execute;
 module.exports.cluster = function (callback) {
     const cluster = require('cluster');
     const fs = require("fs");
-    const path = require("path");
-    const afimport = require("afimport");
-    afimport.include(path.join(__dirname, 'lib/Environment.js'), {
-        override: true
-    });
 // Pidfile contains master process PID.
     var pidfile = 'master.pid'
 
@@ -129,7 +132,6 @@ module.exports.cluster = function (callback) {
     var workers = {};
 
     if (cluster.isMaster) {
-        process.env.ALFA_PORT = 2999;
         process.title = "com.rebelcreators.alfa.master"
         const cpuCount = require('os').cpus().length;
         for (var i = 0; i < cpuCount; i += 1) {
@@ -139,7 +141,7 @@ module.exports.cluster = function (callback) {
         }
 
         cluster.on('died', function (worker) {
-            console.log('Worker ' + process.pid + ' died.');
+            logger.warn('Worker ' + process.pid + ' died.');
             // Remove dead worker.
             delete workers[process.pid];
 
@@ -149,7 +151,7 @@ module.exports.cluster = function (callback) {
 
             // Restart on worker death.
 
-            console.log('Worker ' + process.pid + ' restarting.');
+            logger.info('Worker ' + process.pid + ' restarting.');
             worker = cluster.fork();
             workers[process.pid] = worker;
         });
@@ -158,10 +160,10 @@ module.exports.cluster = function (callback) {
         // when master is terminated.
 
         function cleanup() {
-            console.log('Master stopping.');
+            logger.warn('Master stopping.');
 
             for (var pid in workers) {
-                console.log('Kill worker: ' + pid);
+                logger.warn('Kill worker: ' + pid);
                 process.kill(pid)
             }
 
@@ -186,10 +188,10 @@ module.exports.cluster = function (callback) {
 
         process.title = "com.rebelcreators.alfa.worker"
         process.on('SIGTERM', function () {
-            console.log('Stopping worker ' + process.pid);
+            logger.warn('Stopping worker ' + process.pid);
         });
 
-        console.log('Worker ' + process.pid + ' started.');
+        logger.info('Worker ' + process.pid + ' started.');
 
         callback(module.exports);
     }

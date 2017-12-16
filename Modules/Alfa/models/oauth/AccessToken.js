@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const afimport = require("afimport");
+const logger = afimport.require("logger");
 
 /**
  * @ref oauth2.0
@@ -49,7 +51,7 @@ AccessTokenSchema.statics.saveAccessToken = function(accessToken, clientId, expi
         if (err) return callback(err);
         if (!token) return callback(new Error("Error Saving Token"));
 
-        console.log("Updated the accessToken " + token.token);
+        logger.info("Updated the accessToken " + token.token);
         callback(null);
     });
 };

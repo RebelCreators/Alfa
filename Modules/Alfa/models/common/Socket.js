@@ -5,6 +5,8 @@ const oauth = afimport.require('AccessToken');
 const DeviceModel = afimport.require('Device');
 const DialogModel = afimport.require('Dialog');
 
+const logger = afimport.require("logger");
+
 const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
 const redis = require('socket.io-redis');
 /**
@@ -75,7 +77,7 @@ const connect = function () {
 
     io.on('connection', function (socket) {
         var id = socket.client.id;
-        console.log("socket connected");
+        logger.info("socket connected");
     });
 
     io.listen(process.env.ALFA_SOCKET_PORT);
@@ -83,12 +85,11 @@ const connect = function () {
     io.adapter(adapter);
 
     adapter.pubClient.on('error', function(error){
-        console.log("error" + error);
+        logger.error("error" + error);
 
     });
     adapter.subClient.on('error', function(error){
-        console.log("error" + error);
-
+        logger.error("error" + error);
     });
 };
 

@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const afimport = require("afimport");
+const logger = afimport.require("logger");
+
 
 /**
  * @ref oauth2.0
@@ -30,7 +33,7 @@ RefreshTokenSchema.statics.saveRefreshToken = function (refreshToken, clientId, 
         if (err) return callback(err);
         if (!token) return callback(new Error("Error Saving Token"));
 
-        console.log("Updated the refreshToken " + token.token);
+        logger.info("Updated the refreshToken " + token.token);
         callback(null);
     });
 };
