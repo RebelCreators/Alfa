@@ -66,6 +66,7 @@ const connect = function () {
                     return device.updateDevice(currentUser).then(function () {
 
                     });
+                }).catch(function (error) {
                 });
             });
             next();
@@ -84,11 +85,11 @@ const connect = function () {
     var adapter = redis(redisConfig);
     io.adapter(adapter);
 
-    adapter.pubClient.on('error', function(error){
+    adapter.pubClient.on('error', function (error) {
         logger.error("error" + error);
 
     });
-    adapter.subClient.on('error', function(error){
+    adapter.subClient.on('error', function (error) {
         logger.error("error" + error);
     });
 };
