@@ -16,7 +16,7 @@
     "debug": "~2.2.0",
     "express-mongo-sanitize": "~1.3.2",
     "helmet": "~3.4.0",
-    "mongoose": "4.7.5",
+    "mongoose": "^4.13",
     "mustache": "2.3.0",
     "node-uuid": "~1.4.7",
     "oauth2-server": "~2.2.1",
