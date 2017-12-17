@@ -140,6 +140,11 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
 router.put('/update', app.oauth.authorise(), function (req, res, next) {
     try {
         var json = UserModel.fromPublicJSON(req.body).toJSON();
+        if (json._id != req.user._id) {
+            res.statusCode = 401;
+            next(new Error("Unauthorized"));
+            return;
+        }
         delete json._id;
         delete json.userName;
         json._id = req.user._id;
