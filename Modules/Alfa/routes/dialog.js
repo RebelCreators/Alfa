@@ -6,6 +6,7 @@ const app = afimport.require('app', {
     namespace: "com.rebelcreators.app"
 });
 
+const logger = afimport.require("logger");
 const DialogModel = afimport.require("Dialog");
 const MessageModel = afimport.require("Message");
 const Socket = afimport.require("Socket");
@@ -16,18 +17,24 @@ const Socket = afimport.require("Socket");
  * response {DialogModel}
  */
 router.put('/new', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const json = Object.assign({}, req.body);
-    const dialog = DialogModel.fromPublicJSON(json);
-    dialog.saveNewDialog(currentUser).then(function (dialog) {
-        if (!dialog) {
-            res.statusCode = 500;
-            throw new Error("Error Saving");
-        }
-        res.json(dialog.toJSON());
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const json = Object.assign({}, req.body);
+        const dialog = DialogModel.fromPublicJSON(json);
+        dialog.saveNewDialog(currentUser).then(function (dialog) {
+            if (!dialog) {
+                res.statusCode = 500;
+                throw new Error("Error Saving");
+            }
+            res.json(dialog.toJSON());
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -36,17 +43,23 @@ router.put('/new', app.oauth.authorise(), function (req, res, next) {
  * response {DialogModel}
  */
 router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const dialogId = req.params.dialogId;
-    const permissions = Object.assign({}, req.query.permissions);
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const dialogId = req.params.dialogId;
+        const permissions = Object.assign({}, req.query.permissions);
 
-    DialogModel.dialogWithId(dialogId, permissions, currentUser).then(function (dialog) {
-        return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
-    }).then(function (dialog) {
-        res.json(dialog ? dialog.toJSON() : null);
-    }).catch(function (error) {
-        next(error);
-    });
+        DialogModel.dialogWithId(dialogId, permissions, currentUser).then(function (dialog) {
+            return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
+        }).then(function (dialog) {
+            res.json(dialog ? dialog.toJSON() : null);
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -56,24 +69,30 @@ router.get('/:dialogId/id', app.oauth.authorise(), function (req, res, next) {
  * response {DialogModel}
  */
 router.post('/ids', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const permissions = Object.assign({}, req.body.permissions);
-    const dialogIds = req.body.dialogIds;
-    DialogModel.dialogWithIds(dialogIds, permissions, currentUser).then(function (dialogs) {
-        return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
-    }).then(function (dialogs) {
-        if (!dialogs) {
-            dialogs = [];
-        }
-        var dialogsOutput = [];
-        for (var i = 0; i < dialogs.length; i++) {
-            var dialog = dialogs[i];
-            dialogsOutput.push(dialog.toJSON());
-        }
-        res.json(dialogsOutput);
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const permissions = Object.assign({}, req.body.permissions);
+        const dialogIds = req.body.dialogIds;
+        DialogModel.dialogWithIds(dialogIds, permissions, currentUser).then(function (dialogs) {
+            return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
+        }).then(function (dialogs) {
+            if (!dialogs) {
+                dialogs = [];
+            }
+            var dialogsOutput = [];
+            for (var i = 0; i < dialogs.length; i++) {
+                var dialog = dialogs[i];
+                dialogsOutput.push(dialog.toJSON());
+            }
+            res.json(dialogsOutput);
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -82,24 +101,30 @@ router.post('/ids', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const permissions = Object.assign({}, req.query.permissions);
-    const userIds = req.query.userIds;
-    DialogModel.dialogsWithUsers(userIds, currentUser, permissions).then(function (dialogs) {
-        return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
-    }).then(function (dialogs) {
-        if (!dialogs) {
-            dialogs = [];
-        }
-        var dialogsOutput = [];
-        for (var i = 0; i < dialogs.length; i++) {
-            const dialog = dialogs[i];
-            dialogsOutput.push(dialog.toJSON());
-        }
-        res.json(dialogsOutput);
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const permissions = Object.assign({}, req.query.permissions);
+        const userIds = req.query.userIds;
+        DialogModel.dialogsWithUsers(userIds, currentUser, permissions).then(function (dialogs) {
+            return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
+        }).then(function (dialogs) {
+            if (!dialogs) {
+                dialogs = [];
+            }
+            var dialogsOutput = [];
+            for (var i = 0; i < dialogs.length; i++) {
+                const dialog = dialogs[i];
+                dialogsOutput.push(dialog.toJSON());
+            }
+            res.json(dialogsOutput);
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -112,27 +137,33 @@ router.get('/find/users', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<MessageModel>}
  */
 router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const dialogId = req.params.dialogId;
-    const offset = parseInt(req.query.offset);
-    const limit = parseInt(req.query.limit);
-    var date = null;
-    const asc = parseInt(req.query.asc) || 0;
-    const timestamp = Date.parse(req.query.date)
-    if (isNaN(timestamp) == false) {
-        date = new Date(timestamp);
-    }
-    const permissions = Object.assign({}, req.query.permissions);
-    DialogModel.messages(date, offset, limit, asc, dialogId, permissions, currentUser).then(function (messages) {
-        var output = [];
-        for (var i = 0; i < messages.length; i++) {
-            const message = messages[i].toJSON();
-            output.push(message);
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const dialogId = req.params.dialogId;
+        const offset = parseInt(req.query.offset);
+        const limit = parseInt(req.query.limit);
+        var date = null;
+        const asc = parseInt(req.query.asc) || 0;
+        const timestamp = Date.parse(req.query.date)
+        if (isNaN(timestamp) == false) {
+            date = new Date(timestamp);
         }
-        res.json(output);
-    }).catch(function (error) {
-        next(error);
-    });
+        const permissions = Object.assign({}, req.query.permissions);
+        DialogModel.messages(date, offset, limit, asc, dialogId, permissions, currentUser).then(function (messages) {
+            var output = [];
+            for (var i = 0; i < messages.length; i++) {
+                const message = messages[i].toJSON();
+                output.push(message);
+            }
+            res.json(output);
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -142,34 +173,40 @@ router.get('/messages/:dialogId', app.oauth.authorise(), function (req, res, nex
  * response {Array.<MessageModel>}
  */
 router.get('/between/messages', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    var fromDate = null;
-    var toDate = null;
-    const asc = parseInt(req.query.asc) || 0;
-    const fromTimestamp = Date.parse(req.query.fromDate);
-    const toTimestamp = Date.parse(req.query.toDate);
-    if (isNaN(fromTimestamp) == false) {
-        fromDate = new Date(fromTimestamp);
-    }
-    if (isNaN(toTimestamp) == false) {
-        toDate = new Date(toTimestamp);
-    }
-    if (!toDate || !fromDate) {
-        const error = new Error("Dates not found");
-        error.code = 404;
-        next(error);
-        return;
-    }
-    DialogModel.messagesBetweenDates(fromDate, toDate, asc, currentUser).then(function (messages) {
-        var output = [];
-        for (var i = 0; i < messages.length; i++) {
-            const message = messages[i].toJSON();
-            output.push(message);
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        var fromDate = null;
+        var toDate = null;
+        const asc = parseInt(req.query.asc) || 0;
+        const fromTimestamp = Date.parse(req.query.fromDate);
+        const toTimestamp = Date.parse(req.query.toDate);
+        if (isNaN(fromTimestamp) == false) {
+            fromDate = new Date(fromTimestamp);
         }
-        res.json(output);
-    }).catch(function (error) {
-        next(error);
-    });
+        if (isNaN(toTimestamp) == false) {
+            toDate = new Date(toTimestamp);
+        }
+        if (!toDate || !fromDate) {
+            const error = new Error("Dates not found");
+            error.code = 404;
+            next(error);
+            return;
+        }
+        DialogModel.messagesBetweenDates(fromDate, toDate, asc, currentUser).then(function (messages) {
+            var output = [];
+            for (var i = 0; i < messages.length; i++) {
+                const message = messages[i].toJSON();
+                output.push(message);
+            }
+            res.json(output);
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -177,22 +214,28 @@ router.get('/between/messages', app.oauth.authorise(), function (req, res, next)
  * response {Array.<DialogModel>}
  */
 router.get('/current', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    DialogModel.dialogsForUser(currentUser).then(function (dialogs) {
-        return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
-    }).then(function (dialogs) {
-        if (!dialogs) {
-            dialogs = [];
-        }
-        var dialogsOutput = [];
-        for (var i = 0; i < dialogs.length; i++) {
-            const dialog = dialogs[i];
-            dialogsOutput.push(dialog.toJSON());
-        }
-        res.json(dialogsOutput);
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        DialogModel.dialogsForUser(currentUser).then(function (dialogs) {
+            return DialogModel.getDialogUnreadCounts(dialogs, currentUser._id);
+        }).then(function (dialogs) {
+            if (!dialogs) {
+                dialogs = [];
+            }
+            var dialogsOutput = [];
+            for (var i = 0; i < dialogs.length; i++) {
+                const dialog = dialogs[i];
+                dialogsOutput.push(dialog.toJSON());
+            }
+            res.json(dialogsOutput);
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -203,18 +246,24 @@ router.get('/current', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.post('/add', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const json = Object.assign({}, req.body);
-    const user = json.userId;
-    const dialogId = json.dialogId;
-    const permissions = json.permissions;
-    DialogModel.addUser(user, dialogId, currentUser, permissions).then(function (dialog) {
-        return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
-    }).then(function (dialog) {
-        res.json(dialog.toJSON());
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const json = Object.assign({}, req.body);
+        const user = json.userId;
+        const dialogId = json.dialogId;
+        const permissions = json.permissions;
+        DialogModel.addUser(user, dialogId, currentUser, permissions).then(function (dialog) {
+            return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
+        }).then(function (dialog) {
+            res.json(dialog.toJSON());
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -224,17 +273,23 @@ router.post('/add', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.post('/join', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const json = Object.assign({}, req.body);
-    const dialogId = json.dialogId;
-    const permissions = json.permissions;
-    DialogModel.join(dialogId, currentUser, permissions).then(function (dialog) {
-        return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
-    }).then(function (dialog) {
-        res.json(dialog.toJSON());
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const json = Object.assign({}, req.body);
+        const dialogId = json.dialogId;
+        const permissions = json.permissions;
+        DialogModel.join(dialogId, currentUser, permissions).then(function (dialog) {
+            return DialogModel.getSingleDialogUnreadCount(dialog, currentUser._id);
+        }).then(function (dialog) {
+            res.json(dialog.toJSON());
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -244,15 +299,21 @@ router.post('/join', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const json = Object.assign({}, req.body);
-    const dialogId = json.dialogId;
-    const permissions = json.permissions;
-    DialogModel.removeUser(currentUser._id, dialogId, currentUser, permissions).then(function (dialog) {
-        res.send();
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const json = Object.assign({}, req.body);
+        const dialogId = json.dialogId;
+        const permissions = json.permissions;
+        DialogModel.removeUser(currentUser._id, dialogId, currentUser, permissions).then(function (dialog) {
+            res.send();
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -263,16 +324,22 @@ router.delete('/leave', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const json = Object.assign({}, req.body);
-    const user = json.userId;
-    const dialogId = json.dialogId;
-    const permissions = json.permissions;
-    DialogModel.removeUser(user, dialogId, currentUser, permissions).then(function (dialog) {
-        res.json(dialog.toJSON());
-    }).catch(function (error) {
-        next(error);
-    });
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const json = Object.assign({}, req.body);
+        const user = json.userId;
+        const dialogId = json.dialogId;
+        const permissions = json.permissions;
+        DialogModel.removeUser(user, dialogId, currentUser, permissions).then(function (dialog) {
+            res.json(dialog.toJSON());
+        }).catch(function (error) {
+            next(error);
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -283,32 +350,38 @@ router.delete('/remove', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<DialogModel>}
  */
 router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const json = Object.assign({}, req.body);
-    const dialogId = json.dialogId;
-    const _messsage = json.message;
-    const permissions = json.permissions;
-    _messsage.dialogId = dialogId;
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const json = Object.assign({}, req.body);
+        const dialogId = json.dialogId;
+        const _messsage = json.message;
+        const permissions = json.permissions;
+        _messsage.dialogId = dialogId;
 
-    if (!dialogId) {
-        return next(new Error("No dialog id provided"));
-    }
+        if (!dialogId) {
+            return next(new Error("No dialog id provided"));
+        }
 
-    DialogModel.dialogForMessage(dialogId, currentUser, permissions).then(function (dialog) {
-        const message = MessageModel.fromPublicJSON(_messsage);
+        DialogModel.dialogForMessage(dialogId, currentUser, permissions).then(function (dialog) {
+            const message = MessageModel.fromPublicJSON(_messsage);
 
-        return message.saveMessage(currentUser).then(function (message) {
+            return message.saveMessage(currentUser).then(function (message) {
 
-            return DialogModel.incrementDialog(dialog._id);
+                return DialogModel.incrementDialog(dialog._id);
 
-        }).then(function (dialog) {
+            }).then(function (dialog) {
 
-            Socket.send(message.toJSON(), dialog);
-            res.json(message.toJSON());
+                Socket.send(message.toJSON(), dialog);
+                res.json(message.toJSON());
+            });
+        }).catch(function (error) {
+            next(error);
         });
-    }).catch(function (error) {
-        next(error);
-    });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 module.exports = router;

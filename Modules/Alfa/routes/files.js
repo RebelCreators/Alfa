@@ -9,6 +9,7 @@ const app = afimport.require('app', {
 const s3 = afimport.require('s3');
 const uuid = require('node-uuid');
 const AWS_BUCKET = 'hothelpers';
+const logger = afimport.require("logger");
 
 router.all('*', app.oauth.authorise(), function (req, res, next) {
     next();
@@ -20,53 +21,59 @@ router.all('*', app.oauth.authorise(), function (req, res, next) {
  * response {Array.<string>}
  */
 router.post('/upload', app.oauth.authorise(), function (req, res, next) {
-    const currentUser = req.oauth.bearerToken.user;
-    const filesObject = req.files;
-    const maxUploadLimit = 5;
-    if (!filesObject) {
-        return next(new Error("No files"));
-    }
-    var files = [];
-    const file = filesObject["file"];
-    if (!file) {
-        return next(new Error("No files"));
-    }
-    files.push(file);
-    for (var i = 0; i < maxUploadLimit; i++) {
-        const file = filesObject["file" + i];
+    try {
+        const currentUser = req.oauth.bearerToken.user;
+        const filesObject = req.files;
+        const maxUploadLimit = 5;
+        if (!filesObject) {
+            return next(new Error("No files"));
+        }
+        var files = [];
+        const file = filesObject["file"];
         if (!file) {
-            break;
+            return next(new Error("No files"));
         }
         files.push(file);
-    }
+        for (var i = 0; i < maxUploadLimit; i++) {
+            const file = filesObject["file" + i];
+            if (!file) {
+                break;
+            }
+            files.push(file);
+        }
 
-    var promise = null;
-    var response = [];
-    for (var i = 0; i < files.length; i++) {
-        (function () {
-            const file = files[i];
-            const path = file.path;
-            if (!promise) {
-                promise = uploadFile(path, currentUser._id).then(function (fileId) {
-                    console.log("Successfully uploaded file: ", fileId, " ", path);
-                    response.push(fileId);
-                });
-            } else {
-                promise = promise.then(function () {
-                    return uploadFile(path, currentUser._id).then(function (fileId) {
+        var promise = null;
+        var response = [];
+        for (var i = 0; i < files.length; i++) {
+            (function () {
+                const file = files[i];
+                const path = file.path;
+                if (!promise) {
+                    promise = uploadFile(path, currentUser._id).then(function (fileId) {
                         console.log("Successfully uploaded file: ", fileId, " ", path);
                         response.push(fileId);
                     });
-                });
-            }
-        })();
-    }
+                } else {
+                    promise = promise.then(function () {
+                        return uploadFile(path, currentUser._id).then(function (fileId) {
+                            console.log("Successfully uploaded file: ", fileId, " ", path);
+                            response.push(fileId);
+                        });
+                    });
+                }
+            })();
+        }
 
-    promise.then(function () {
-        res.json(response);
-    }).catch(function (err) {
-        next(new Error("No files"));
-    });
+        promise.then(function () {
+            res.json(response);
+        }).catch(function (err) {
+            next(new Error("No files"));
+        });
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
@@ -74,9 +81,15 @@ router.post('/upload', app.oauth.authorise(), function (req, res, next) {
  * response {Data}
  */
 router.get('/:fileId/download', function (req, res, next) {
-    const fileId = req.params.fileId;
-    const path = fileId;
-    downloadFile(path, res, next);
+    try {
+        const fileId = req.params.fileId;
+        const path = fileId;
+        downloadFile(path, res, next);
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
 });
 
 /**
