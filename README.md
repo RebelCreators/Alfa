@@ -57,7 +57,7 @@ region=us-west-1
 
 ## Docs
 
-To create docs run this in the Modules/Alfa directory.
-`jsdoc ./models -r ./lib -r ./routes/index.js ./node_modules/afimport/index.js ./server.js -d ./docs`
+To create docs open a terminal and run this in the Modules/Alfa directory.
+`rm -Rf docs && jsdoc ./models -r ./lib -r ./routes/index.js ./node_modules/afimport/index.js ./server.js -d ./docs -R ../../README.md`
 
 Or run the `docs.sh` script in the Modules/Alfa directory.
