@@ -102,14 +102,22 @@ const connect = function () {
     });
 };
 
+
 /**
- * Sends message to device.
- * @memberof module:Socket
- *
- * @param {object} message
- * @param {DeviceModel} device
+ * @private
+ * @type {{DialogNamespace: string, ServerNamespace: string}}
  */
-const sendMessageToDevice = function (message, device) {
+var MessageNamespace = {
+    DialogNamespace: "com.rebel.creators.message",
+    ServerNamespace: "com.rebel.creators.server.message"
+};
+
+
+/**
+ *
+ * @private
+ */
+const sendMessageToDevice = function (message, device, namespace) {
     if (!message || !device) {
         return;
     }
@@ -117,8 +125,9 @@ const sendMessageToDevice = function (message, device) {
     if (!clientId) {
         return;
     }
-    io.to(clientId).emit("com.rebel.creators.message", message);
+    io.to(clientId).emit(namespace, message);
 };
+
 
 /**
  * Sends message to dialog
@@ -131,7 +140,24 @@ const sendMessageToDevice = function (message, device) {
 const send = function (message, dialog) {
     DeviceModel.devicesForUsers(dialog.currentUsers).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
-            sendMessageToDevice(message, device);
+            sendMessageToDevice(message, device, MessageNamespace.DialogNamespace);
+        });
+    });
+};
+
+
+/**
+ * Sends a server message to a user's devices
+ *
+ * @memberof module:Socket
+ *
+ * @param {object} message
+ * @param {UserModel} user
+ */
+const sendServerMessageToUser = function (message, user) {
+    DeviceModel.devicesForUsers([user]).then(function (devices) {
+        DeviceModel.iterateDevices(devices, function (key, device) {
+            sendMessageToDevice(message, device, MessageNamespace.ServerNamespace);
         });
     });
 };
@@ -145,7 +171,14 @@ module.exports.send = send;
 
 
 /**
- * 
+ *
+ * @type {module:Socket.sendServerMessageToUser}
+ */
+module.exports.sendServerMessageToUser = sendServerMessageToUser;
+
+
+/**
+ *
  * @type {module:Socket.connect}
  */
 module.exports.connect = connect;

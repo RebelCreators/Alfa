@@ -370,7 +370,6 @@ router.put('/message/send', app.oauth.authorise(), function (req, res, next) {
                 return DialogModel.incrementDialog(dialog._id);
 
             }).then(function (dialog) {
-
                 Socket.send(message.toJSON(), dialog);
                 res.json(message.toJSON());
             });

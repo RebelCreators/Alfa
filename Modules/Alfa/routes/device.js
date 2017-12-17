@@ -7,6 +7,8 @@ const app = afimport.require('app', {
 });
 const DeviceModel = afimport.require("Device");
 const logger = afimport.require("logger");
+const Socket = afimport.require("Socket");
+const MessageModel = afimport.require("Message");
 
 
 /**
@@ -31,6 +33,7 @@ router.put('/update', app.oauth.authorise(), function (req, res, next) {
     }
 });
 
+
 /**
  * POST /delete
  * body: DeviceModel
@@ -51,5 +54,25 @@ router.post('/delete', app.oauth.authorise(), function (req, res, next) {
         next(new Error("Internal Error"));
     }
 });
+
+/**
+ * POST /ping
+ * body: {MessageModel}
+ * response none
+ */
+router.post('/ping', app.oauth.authorise(), function (req, res, next) {
+    try {
+        const json = Object.assign({}, req.body);
+        const currentUser = req.oauth.bearerToken.user;
+        const message = MessageModel.fromPublicJSON(json);
+        Socket.sendServerMessageToUser(message.toJSON(), currentUser);
+        res.send();
+    } catch (error) {
+        logger.error("" + error);
+        res.statusCode = 500;
+        next(new Error("Internal Error"));
+    }
+});
+
 
 module.exports = router;

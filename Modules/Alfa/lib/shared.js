@@ -93,21 +93,109 @@ function tickShim(fn) {
     setTimeout(fn, 1);
 }
 
+/**
+ * Array Iterator
+ *
+ * @callback ArrayIterator<T>
+ * @param {int} index
+ * @param {T} valueAtIndex
+ * @param {?Array<T>} Array
+ */
+
+/**
+ * Object Iterator
+ *
+ * @callback ObjectIterator<K:V>
+ * @param {K} objectProperty
+ * @param {V} valueForProperty
+ * @param {?Object<K:V>} Object
+ */
+
+/**
+ *  AsyncForEach completion, called once all iteration is finished
+ *
+ * @callback AsyncForEachArrayCompletion<T>
+ *
+ * @param {?Array<T>} Object
+ */
+
+/**
+ *  AsyncForEach completion, called once all iteration is finished
+ *
+ * @callback AsyncForEachObjectCompletion<K:V>
+ *
+ * @param {?Object<K:V>} Object
+ */
+
+/**
+ * Asynchronously iterates an array or object key
+ * @function asyncForEach
+ * @memberof module:Shared
+ *
+ * @param {Array<T>|Object<K:V>} object
+ * @param {ArrayIterator<T>|ObjectIterator<K:V>} iter
+ * @param {(AsyncForEachArrayCompletion<T>|AsyncForEachObjectCompletion<K:V>)=} completion
+ */
+
+module.exports.asyncForEach = function (object, iter, completion) {
+    var keys = Object.keys(object), offset = 0;
+
+    (function next() {
+        // invoke the iterator function
+        iter.call(object, keys[offset], object[keys[offset]], object);
+
+        if (++offset < keys.length) {
+            tick(next);
+        } else {
+            if (completion) {
+                completion.call(object);
+            }
+        }
+    })();
+};
+
+
+/**
+ *  @callback NextTick
+ */
+
+
+/**
+ * Array iterator with nextTick
+ *
+ * @callback AyncArrayIterator<T>
+ * @param {NextTick} nextTick  function() to be called to signal an iteration is finished
+ * @param {int} index
+ * @param {T} valueAtIndex
+ * @param {?Array<T>} Array
+ */
+
+/**
+ * Object iterator with nextTick
+ *
+ * @callback AyncObjectIterator<K:V>
+ * @param {NextTick} nextTick function() to be called to signal an iteration is finished
+ * @param {K} objectProperty
+ * @param {V} valueForProperty
+ * @param {?Object<K:V>} Object
+ */
 
 /**
  *
- * Asynchronously iterates an array or object keys
+ * Asynchronously iterates an array or object keys it passes in a nextTick funtion and defers the next loop until the next tick function is called
  * @function asyncForEachAsync
  * @memberof module:Shared
  *
- * @param {Array<T>|Object<T>} object
- * @param {function(T)} iter
- * @param {function(Object<T>)} completion
+ * @param {Array<T>|Object<K:V>} object
+ * @param {AyncArrayIterator<T>|AyncObjectIterator<K:V>} iter
+ * @param {(AsyncForEachArrayCompletion<T>|AsyncForEachObjectCompletion<K:V>)=} completion
  */
 module.exports.asyncForEachAsync = function (object, iter, completion) {
     var keys = Object.keys(object), offset = 0;
     if (!keys || keys.length == 0) {
-        completion([]);
+        if (completion) {
+            completion([]);
+        }
         return;
     }
     (function next() {
@@ -132,7 +220,7 @@ module.exports.asyncForEachAsync = function (object, iter, completion) {
  *
  * @function initClass
  * @memberof module:Shared
- * 
+ *
  * @param Clazz
  * @param Superclass
  */
