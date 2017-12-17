@@ -9,6 +9,7 @@ afimport.include(path.join(__dirname, 'lib/logger.js'), {
 const logger = afimport.require("logger");
 
 const execute = function (express, afimportModule) {
+    afimport.provide(express, "express");
     const app = express();
 
     afimport.include([path.join(__dirname, 'lib/**/*'), path.join(__dirname, 'models/**/*')]);
