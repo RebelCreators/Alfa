@@ -65,7 +65,7 @@ router.post('/ping', app.oauth.authorise(), function (req, res, next) {
         const json = Object.assign({}, req.body);
         const currentUser = req.oauth.bearerToken.user;
         const message = MessageModel.fromPublicJSON(json);
-        Socket.sendServerMessageToUser(message.toJSON(), currentUser);
+        Socket.sendServerMessageToUser(message, currentUser);
         res.send();
     } catch (error) {
         logger.error("" + error);

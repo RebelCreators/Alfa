@@ -209,6 +209,7 @@ DialogSchema.statics.fromPublicJSON = function (json) {
  *
  * @function saveNewDialog
  * @memberof module:models/DialogModel~DialogModel
+ * @instance
  *
  * @param {UserModel} currentUser
  * @return {Promise.<DialogModel, Error>}

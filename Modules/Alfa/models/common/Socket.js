@@ -4,6 +4,7 @@ const io = require('socket.io')();
 const oauth = afimport.require('AccessToken');
 const DeviceModel = afimport.require('Device');
 const DialogModel = afimport.require('Dialog');
+const MessageModel = afimport.require('Message');
 
 const logger = afimport.require("logger");
 
@@ -125,7 +126,7 @@ const sendMessageToDevice = function (message, device, namespace) {
     if (!clientId) {
         return;
     }
-    io.to(clientId).emit(namespace, message);
+    io.to(clientId).emit(namespace, message.toJSON());
 };
 
 
@@ -134,7 +135,7 @@ const sendMessageToDevice = function (message, device, namespace) {
  *
  * @memberof module:Socket
  *
- * @param {object} message
+ * @param {MessageModel} message
  * @param {DialogModel} dialog
  */
 const send = function (message, dialog) {
@@ -151,7 +152,7 @@ const send = function (message, dialog) {
  *
  * @memberof module:Socket
  *
- * @param {object} message
+ * @param {MessageModel} message
  * @param {UserModel} user
  */
 const sendServerMessageToUser = function (message, user) {
