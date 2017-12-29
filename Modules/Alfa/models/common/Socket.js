@@ -11,6 +11,7 @@ const PushConfig = afimport.require('push_config');
 
 const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
 const redis = require('socket.io-redis');
+const DisabledPushConfig = "com.rebel.creators.none";
 
 /**
  * DB Module
@@ -124,7 +125,7 @@ const sendMessageToDevice = function (message, device, namespace, dialog, sender
     }
     const clientId = device.clientId;
     if (!clientId) {
-        if (device.apnsToken) {
+        if (device.apnsToken && (!message.pushConfig || message.pushConfig != DisabledPushConfig)) {
             var pushConfig = PushConfig.configForName(message.pushConfig);
             var apnsNotification = new apns.APNSNotification(message.toJSON(), device);
             apnsNotification.dialog = dialog;
