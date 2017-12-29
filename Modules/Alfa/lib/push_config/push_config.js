@@ -3,7 +3,10 @@
  * @type {{alert: string, badge: number, sound: null}}
  */
 const defaultConfig = {
-    "alert": "New message from {{sender.userName}}",
+    "alert": {
+        "title" : "New message",
+        "body" : "{{sender.userName}} sent a message"
+    },
     "badge": 0,
     "sound": null
 }

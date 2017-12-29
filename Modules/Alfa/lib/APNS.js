@@ -112,11 +112,12 @@ APNSNotification.prototype.send = function () {
         "to": self.device.user,
         "sender": sender
     };
-    const alert = Mustache.render(pushConfig.alert || PushConfig.defaultConfig.alert, templateInput);
+    const alertTemplate = pushConfig.alert || PushConfig.defaultConfig.alert;
+    const alert = JSON.parse(Mustache.render(JSON.stringify(alertTemplate), templateInput));
 
     const notification = new apn.Notification();
     notification.alert = alert;
-    notification.payload = {nameSpace: self.namespace};
+    notification.payload = {namespace: self.namespace};
     notification.payload[RCMessageKey] = messageObject || {};
     notification.sound = pushConfig.sound || PushConfig.defaultConfig.sound;
     notification.badge = pushConfig.badge || PushConfig.defaultConfig.badge;
