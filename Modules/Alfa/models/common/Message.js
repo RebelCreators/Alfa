@@ -51,6 +51,13 @@ const MessageSchema = new Schema({
      * @memberof module:models/MessageModel~MessageModel
      * @instance
      *
+     * @type {string}
+     */
+    pushConfig: String,
+    /**
+     * @memberof module:models/MessageModel~MessageModel
+     * @instance
+     *
      * @default Date.now
      *
      * @type {Date}

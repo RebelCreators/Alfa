@@ -137,6 +137,13 @@ const DialogSchema = new Schema({
      *
      * @type {string}
      */
+    pushConfig: String,
+    /**
+     * @memberof module:models/DialogModel~DialogModel
+     * @instance
+     *
+     * @type {string}
+     */
     name: {type: String, required: true},
     /**
      * @memberof module:models/DialogModel~DialogModel

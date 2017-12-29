@@ -1,6 +1,5 @@
 {
-  "service_request": {
-    "title": "Service Request",
-    "payload": "New service request for {{extras.name}}."
-  }
+  "alert": "New message from {{from.userName}}",
+  "badge": 0,
+  "sound": null
 }

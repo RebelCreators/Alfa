@@ -12,8 +12,16 @@ const MessageModel = afimport.require("Message");
 
 
 /**
- * PUT /update
- * body: DeviceModel
+ *
+ * Updates a device.
+ *
+ * @name Update Device
+ * @route {PUT} /update
+ *
+ * @authentication This route requires HTTP Bearer Authentication. If authentication fails it will return a 401 error.
+ *
+ * @body: DeviceModel
+ * 
  * response none
  */
 router.put('/update', app.oauth.authorise(), function (req, res, next) {

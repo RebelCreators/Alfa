@@ -5,7 +5,7 @@ const oauth = afimport.require('AccessToken');
 const DeviceModel = afimport.require('Device');
 const DialogModel = afimport.require('Dialog');
 const MessageModel = afimport.require('Message');
-
+const apns = afimport.require("APNS");
 const logger = afimport.require("logger");
 
 const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
@@ -68,14 +68,13 @@ const connect = function () {
                 var deviceToken = query.deviceToken;
                 var id = socket.client.id;
                 DeviceModel.deviceWithToken(deviceToken).then(function (device) {
-                    if (device.user._id != currentUser._id) {
+                    if (device.user._id.toString() != currentUser._id.toString()) {
                         return;
                     }
                     device.clientId = null;
-                    return device.updateDevice(currentUser).then(function () {
-
-                    });
+                    return device.updateDevice(currentUser);
                 }).catch(function (error) {
+                    logger.error("" + error);
                 });
             });
             next();
@@ -95,11 +94,11 @@ const connect = function () {
     io.adapter(adapter);
 
     adapter.pubClient.on('error', function (error) {
-        logger.error("error" + error);
+        logger.error("" + error);
 
     });
     adapter.subClient.on('error', function (error) {
-        logger.error("error" + error);
+        logger.error("" + error);
     });
 };
 
@@ -118,12 +117,19 @@ var MessageNamespace = {
  *
  * @private
  */
-const sendMessageToDevice = function (message, device, namespace) {
+const sendMessageToDevice = function (message, device, namespace, dialog, fromUser) {
     if (!message || !device) {
         return;
     }
     const clientId = device.clientId;
-    if (!clientId) {
+     if (!clientId) {
+        var token = device.apnsToken;
+        if (token) {
+            apns.sendNotification(message, dialog, token, device, fromUser).catch(function (error) {
+                logger.error("" + error);
+            });
+            return;
+        }
         return;
     }
     io.to(clientId).emit(namespace, message.toJSON());
@@ -138,10 +144,10 @@ const sendMessageToDevice = function (message, device, namespace) {
  * @param {MessageModel} message
  * @param {DialogModel} dialog
  */
-const send = function (message, dialog) {
+const send = function (message, dialog, fromUser) {
     DeviceModel.devicesForUsers(dialog.currentUsers).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
-            sendMessageToDevice(message, device, MessageNamespace.DialogNamespace);
+            sendMessageToDevice(message, device, MessageNamespace.DialogNamespace, dialog, fromUser);
         });
     });
 };
@@ -155,10 +161,10 @@ const send = function (message, dialog) {
  * @param {MessageModel} message
  * @param {UserModel} user
  */
-const sendServerMessageToUser = function (message, user) {
-    DeviceModel.devicesForUsers([user]).then(function (devices) {
+const sendServerMessageToUser = function (message, fromUser) {
+    DeviceModel.devicesForUsers([fromUser]).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
-            sendMessageToDevice(message, device, MessageNamespace.ServerNamespace);
+            sendMessageToDevice(message, device, MessageNamespace.ServerNamespace, null, fromUser);
         });
     });
 };

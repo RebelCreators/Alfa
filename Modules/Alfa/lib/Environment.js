@@ -14,7 +14,8 @@ const alfa_env = require(path.resolve(os.homedir()) + path.sep + ".env/alfa.json
 "ALFA_CLIENT_SECRET":"###########",
 "ALFA_CLIENT_ID":"########",
 "ALFA_DB":"###########",
-"DEBUG": "Alfa:*"
+"DEBUG": "Alfa:*",
+"PUSH_APP_BUNDLE": "#########"
 }
  *
  */
