@@ -1,6 +1,14 @@
-var defaultConfig = require("./default.json");
+/**
+ *
+ * @type {{alert: string, badge: number, sound: null}}
+ */
+const defaultConfig = {
+    "alert": "New message from {{sender.userName}}",
+    "badge": 0,
+    "sound": null
+}
 
-var configs = {};
+const configs = {};
 
 /**
  * Push Configuration
@@ -16,7 +24,7 @@ var configs = {};
  * @return {{alert: string, badge: ?number, sound: ?string}}
  */
 module.exports.configForName = function (configName) {
-    var config = configs[configName];
+    const config = configs[configName];
     return config || defaultConfig;
 };
 
@@ -29,6 +37,16 @@ module.exports.configForName = function (configName) {
  */
 module.exports.setConfigForName = function (configName, config) {
     configs[configName] = config;
+};
+
+/**
+ * @function setDefaultConfig
+ * @memberof module:push_config
+ *
+ * @param {?{alert: string, badge: ?number, sound: ?string}} config
+ */
+module.exports.setDefaultConfig = function (config) {
+    module.exports.defaultConfig = config || defaultConfig;
 };
 
 module.exports.defaultConfig = defaultConfig;

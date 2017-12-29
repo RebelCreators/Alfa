@@ -15,7 +15,6 @@ const RCMessageKey = "com.rebel.creators.message.key";
 /**
  * @private
  */
-
 var options = {
     token: {
         key: path.resolve(os.homedir()) + path.sep + ".certs/apns.p8",
