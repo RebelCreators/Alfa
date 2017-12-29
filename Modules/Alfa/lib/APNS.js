@@ -9,60 +9,121 @@ const RCMessageKey = "com.rebel.creators.message.key";
 
 /**
  * Push Service
- * @module push-service
+ * @module APNS
+ */
+
+/**
+ * @private
  */
 
 var options = {
     token: {
         key: path.resolve(os.homedir()) + path.sep + ".certs/apns.p8",
-        keyId: "64QWKA8JJ8",
-        teamId: "UXAB3BW444"
+        keyId: Environment["APNS_KEY_ID"],
+        teamId: Environment["APNS_TEAM_ID"]
     },
     production: false
 };
 
-/**
- * @memberof module:push-service
- * @type {Notification}
- */
-module.exports.Notification = apn.Notification;
 
 /**
- * @memberof module:push-service
- * @type {Provider}
+ * @private
  */
-module.exports.Provider = new apn.Provider(options);
+var Provider = new apn.Provider(options);
 
 
 /**
  *
- * @function MakeNotification
- * @memberof module:push-service
+ * @param {string} messageObject
+ * @param {string} device
+ * @param {string=} dialog
+ * @param {string=} sender
+ * @param {string=} pushConfig
+ * @param {string=} namespace
  *
- * @param {MessageModel} message
- * @param {DialogModel} dialog
- * @param {string} apnsToken
- * @param {DeviceModel} device
+ * @constructor APNSNotification
+ */
+const APNSNotification = function (messageObject, device, dialog, sender, pushConfig, namespace) {
+    this.messageObject = messageObject;
+    this.dialog = dialog;
+    this.device = device;
+    this.fromUser = sender;
+    this.pushConfig = pushConfig;
+    this.namespace = namespace
+};
+
+
+/**
+ * @type {Object}
+ */
+APNSNotification.prototype.messageObject;
+
+/**
+ * @type {DeviceModel}
+ */
+APNSNotification.prototype.device;
+
+/**
+ * @type {?DialogModel}
+ */
+APNSNotification.prototype.dialog;
+
+/**
+ *
+ * The user that sent the message
+ *
+ * @type {?UserModel}
+ */
+APNSNotification.prototype.sender;
+
+/**
+ * Config object for push notification See: push_config
+ * @type {?Object}
+ */
+APNSNotification.prototype.pushConfig;
+
+/**
+ *
+ * The socket io namespace for the notification
+ * @type {?string}
+ */
+APNSNotification.prototype.namespace;
+
+/**
+ *
+ * Sends a push notification
+ *
  * @return {Promise}
- * @constructor
  */
-module.exports.sendNotification = function (message, dialog, apnsToken, device, fromUser) {
+APNSNotification.prototype.send = function () {
     const self = this;
-    const messageObject = message.toJSON();
-    const pushConfig = PushConfig.configForName(message.pushConfig);
+    const apnsToken = self.device.apnsToken;
+    if (!apnsToken) {
+        return new Promise(function (resolve, reject) {
+            reject(new Error("Notification credential not found."));
+        });
+    }
+    const pushConfig = self.pushConfig || {};
+    const dialog = self.dialog;
+    const messageObject = self.messageObject;
+    const sender = self.sender;
     const templateInput = {
         "message": messageObject,
         "dialog": dialog ? dialog.toJSON() : null,
-        "to": device.user,
-        "from": fromUser
+        "to": self.device.user,
+        "sender": sender
     };
     const alert = Mustache.render(pushConfig.alert || PushConfig.defaultConfig.alert, templateInput);
 
-    const notification = new self.Notification();
+    const notification = new apn.Notification();
     notification.alert = alert;
-    notification.payload = {RCMessageKey: messageObject || {}};
+    notification.payload = {nameSpace: self.namespace};
+    notification.payload[RCMessageKey] = messageObject || {};
     notification.sound = pushConfig.sound || PushConfig.defaultConfig.sound;
     notification.badge = pushConfig.badge || PushConfig.defaultConfig.badge;
     notification.topic = Environment["PUSH_APP_BUNDLE"];
-    return self.Provider.send(notification, apnsToken);
+
+    return Provider.send(notification, apnsToken);
 };
+
+module.exports.APNSNotification = APNSNotification;

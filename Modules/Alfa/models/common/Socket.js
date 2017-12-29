@@ -7,6 +7,7 @@ const DialogModel = afimport.require('Dialog');
 const MessageModel = afimport.require('Message');
 const apns = afimport.require("APNS");
 const logger = afimport.require("logger");
+const PushConfig = afimport.require('push_config');
 
 const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
 const redis = require('socket.io-redis');
@@ -117,15 +118,20 @@ var MessageNamespace = {
  *
  * @private
  */
-const sendMessageToDevice = function (message, device, namespace, dialog, fromUser) {
+const sendMessageToDevice = function (message, device, namespace, dialog, sender) {
     if (!message || !device) {
         return;
     }
     const clientId = device.clientId;
-     if (!clientId) {
-        var token = device.apnsToken;
-        if (token) {
-            apns.sendNotification(message, dialog, token, device, fromUser).catch(function (error) {
+    if (!clientId) {
+        if (device.apnsToken) {
+            var pushConfig = PushConfig.configForName(message.pushConfig);
+            var apnsNotification = new apns.APNSNotification(message.toJSON(), device);
+            apnsNotification.dialog = dialog;
+            apnsNotification.sender = sender;
+            apnsNotification.pushConfig = pushConfig;
+            apnsNotification.namespace = namespace;
+            apnsNotification.send().catch(function (error) {
                 logger.error("" + error);
             });
             return;
@@ -143,11 +149,12 @@ const sendMessageToDevice = function (message, device, namespace, dialog, fromUs
  *
  * @param {MessageModel} message
  * @param {DialogModel} dialog
+ * @param {UserModel} sender
  */
-const send = function (message, dialog, fromUser) {
+const send = function (message, dialog, sender) {
     DeviceModel.devicesForUsers(dialog.currentUsers).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
-            sendMessageToDevice(message, device, MessageNamespace.DialogNamespace, dialog, fromUser);
+            sendMessageToDevice(message, device, MessageNamespace.DialogNamespace, dialog, sender);
         });
     });
 };
@@ -159,12 +166,12 @@ const send = function (message, dialog, fromUser) {
  * @memberof module:Socket
  *
  * @param {MessageModel} message
- * @param {UserModel} user
+ * @param {UserModel} sender
  */
-const sendServerMessageToUser = function (message, fromUser) {
-    DeviceModel.devicesForUsers([fromUser]).then(function (devices) {
+const sendServerMessageToUser = function (message, sender) {
+    DeviceModel.devicesForUsers([sender]).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
-            sendMessageToDevice(message, device, MessageNamespace.ServerNamespace, null, fromUser);
+            sendMessageToDevice(message, device, MessageNamespace.ServerNamespace, null, sender);
         });
     });
 };

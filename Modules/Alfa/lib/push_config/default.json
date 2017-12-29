@@ -1,5 +1,5 @@
 {
-  "alert": "New message from {{from.userName}}",
+  "alert": "New message from {{sender.userName}}",
   "badge": 0,
   "sound": null
 }
