@@ -17,6 +17,24 @@ https://medium.com/@petehouston/install-and-config-redis-on-mac-os-x-via-homebre
 Environment Variables are set in a alfo.json file
 that should be copied into ~/.env/alfa.json (This file should not be checked in)
 
+This file holds configuration data for the alfa server environment.
+Example ~/.env/alfa.json:
+
+```
+{
+"ALFA_PORT":3000,
+"ALFA_REDIS_HOST":"Your-Redis-Host",
+"ALFA_REDIS_PORT":6379,
+"ALFA_SOCKET_PORT":5225,
+"ALFA_CLIENT_SECRET":"A Random Sercret",
+"ALFA_CLIENT_ID":"A Random Client ID",
+"ALFA_DB":"mongodb://localhost:27017/AlfaV2",
+"PUSH_APP_BUNDLE": "MyAppBundle",
+"APNS_KEY_ID": "YOUR-APNS-KEY-ID",
+"APNS_TEAM_ID": "YOUR-TEAM-ID"
+}
+```
+
 ssh</p>
 `scp ~/.env/alfa_local_copy.json user@host:~/.env/alfa.json`
 
