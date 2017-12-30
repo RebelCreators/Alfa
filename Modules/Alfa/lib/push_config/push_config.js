@@ -9,7 +9,7 @@ const defaultConfig = {
     },
     "badge": 0,
     "sound": null
-}
+};
 
 const configs = {};
 
