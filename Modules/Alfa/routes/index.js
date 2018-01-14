@@ -15,9 +15,10 @@ const router = afimport.require("ExpressRouter", {
 /**
  * @private
  * @param {string} filePattern
- * @param {{namespace: ?string, subpath: ?string, version: ?string}} options
+ * @param {{namespace: ?string, subpath: ?string, version: ?string, router: ?Router}} options
  */
 function resolve(filePattern, options) {
+    const router = options.router || defaultOptions.router;
     var options = options || defaultOptions;
     if (!options.namespace) {
         options.namespace = defaultOptions.namespace;
@@ -38,14 +39,14 @@ function resolve(filePattern, options) {
     }
     if (classNames) {
         for (var i = 0; i < classNames.length; i++) {
-            router.use( "/" + version + subpath + classNames[i].toLowerCase(), afimport.require(classNames[i], options));
+            router.use("/" + version + subpath + classNames[i].toLowerCase(), afimport.require(classNames[i], options));
         }
     }
 }
 
 /**
  * @expose
- * @type {{namespace: string, subpath: ?string, version: ?string}}
+ * @type {{namespace: string, subpath: ?string, version: ?string, router: Router}}
  */
 var defaultOptions = {
     /**
@@ -68,7 +69,8 @@ var defaultOptions = {
      *
      * @type {?string}
      */
-    version: null
+    version: null,
+    router: router
 };
 
 /**
@@ -76,12 +78,12 @@ var defaultOptions = {
  * Export Router
  *
  * @param {string} filePattern
- * @param {{namespace: ?string, subpath: ?string, version: ?string}} options
+ * @param {{namespace: ?string, subpath: ?string, version: ?string, router: ?Router}} options
  * @returns {Router}
  *
  * @static
  */
 module.exports = function (filePattern, options) {
-    resolve(filePattern);
-    return router;
+    resolve(filePattern, options || defaultOptions);
+    return options ? options.router || defaultOptions.router : defaultOptions.router;
 };
