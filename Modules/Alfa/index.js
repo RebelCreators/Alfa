@@ -88,7 +88,9 @@ const execute = function (express, afimportModule, options) {
             var err = new Error('Not Found');
             err.code = 404;
             next(err);
+            return;
         }
+        next();
     });
 
 // error handlers
