@@ -4,7 +4,7 @@ const os = require('os');
 const alfa_env = require(path.resolve(os.homedir()) + path.sep + ".env/alfa.json");
 /**
  * Create an alfa_env.json
- sudo cp alfa_env.json /etc/alfa_env.json
+ sudo cp alfa_env.json ~/.env/alfa_env.json
 
  {
 "ALFA_PORT":####,
@@ -14,7 +14,8 @@ const alfa_env = require(path.resolve(os.homedir()) + path.sep + ".env/alfa.json
 "ALFA_CLIENT_SECRET":"###########",
 "ALFA_CLIENT_ID":"########",
 "ALFA_DB":"###########",
-"DEBUG": "Alfa:*"
+"DEBUG": "Alfa:*",
+"PUSH_APP_BUNDLE": "#########"
 }
  *
  */

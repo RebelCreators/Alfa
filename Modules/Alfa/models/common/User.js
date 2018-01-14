@@ -306,7 +306,7 @@ UserSchema.statics.getUsersByIds = function (userIds) {
  */
 UserSchema.statics.getUserByUserName = function (userName) {
     return new Promise(function (resolve, reject) {
-        var q = {userName: userName.toLowerCase()};
+        var q = {userName: userName};
         UserModel.findOne(q, function (err, obj) {
             if (err) return reject(err);
             if (!obj) return resolve(null);

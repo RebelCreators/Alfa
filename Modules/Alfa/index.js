@@ -8,7 +8,14 @@ afimport.include(path.join(__dirname, 'lib/logger.js'), {
 });
 const logger = afimport.require("logger");
 
-const execute = function (express, afimportModule) {
+/**
+ *
+ * @type {{catch404: boolean}}
+ */
+const optionsDefaults = {
+    catch404: true
+}
+const execute = function (express, afimportModule, options) {
     afimport.provide(express, "express");
     const app = express();
 
@@ -77,15 +84,11 @@ const execute = function (express, afimportModule) {
 
 // catch 404 and forward to error handler
     app.use(function (req, res, next) {
-        var err = new Error('Not Found');
-        err.code = 404;
-        next(err);
-    });
-
-    app.use(function (req, res, next) {
-        var err = new Error('Access Denied');
-        err.code = 401;
-        next(err);
+        if (options ? options.catch404 : optionsDefaults.catch404) {
+            var err = new Error('Not Found');
+            err.code = 404;
+            next(err);
+        }
     });
 
 // error handlers

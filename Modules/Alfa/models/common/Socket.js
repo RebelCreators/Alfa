@@ -5,11 +5,13 @@ const oauth = afimport.require('AccessToken');
 const DeviceModel = afimport.require('Device');
 const DialogModel = afimport.require('Dialog');
 const MessageModel = afimport.require('Message');
-
+const apns = afimport.require("APNS");
 const logger = afimport.require("logger");
+const PushConfig = afimport.require('push_config');
 
 const redisConfig = {host: process.env.ALFA_REDIS_HOST, port: process.env.ALFA_REDIS_PORT};
 const redis = require('socket.io-redis');
+const DisabledPushConfig = "com.rebel.creators.none";
 
 /**
  * DB Module
@@ -68,14 +70,13 @@ const connect = function () {
                 var deviceToken = query.deviceToken;
                 var id = socket.client.id;
                 DeviceModel.deviceWithToken(deviceToken).then(function (device) {
-                    if (device.user._id != currentUser._id) {
+                    if (device.user._id.toString() != currentUser._id.toString()) {
                         return;
                     }
                     device.clientId = null;
-                    return device.updateDevice(currentUser).then(function () {
-
-                    });
+                    return device.updateDevice(currentUser);
                 }).catch(function (error) {
+                    logger.error("" + error);
                 });
             });
             next();
@@ -95,11 +96,11 @@ const connect = function () {
     io.adapter(adapter);
 
     adapter.pubClient.on('error', function (error) {
-        logger.error("error" + error);
+        logger.error("" + error);
 
     });
     adapter.subClient.on('error', function (error) {
-        logger.error("error" + error);
+        logger.error("" + error);
     });
 };
 
@@ -118,12 +119,24 @@ var MessageNamespace = {
  *
  * @private
  */
-const sendMessageToDevice = function (message, device, namespace) {
+const sendMessageToDevice = function (message, device, namespace, dialog, sender) {
     if (!message || !device) {
         return;
     }
     const clientId = device.clientId;
     if (!clientId) {
+        if (device.apnsToken && (!message.pushConfig || message.pushConfig != DisabledPushConfig)) {
+            var pushConfig = PushConfig.configForName(message.pushConfig);
+            var apnsNotification = new apns.APNSNotification(message.toJSON(), device);
+            apnsNotification.dialog = dialog;
+            apnsNotification.sender = sender;
+            apnsNotification.pushConfig = pushConfig;
+            apnsNotification.namespace = namespace;
+            apnsNotification.send().catch(function (error) {
+                logger.error("" + error);
+            });
+            return;
+        }
         return;
     }
     io.to(clientId).emit(namespace, message.toJSON());
@@ -137,11 +150,12 @@ const sendMessageToDevice = function (message, device, namespace) {
  *
  * @param {MessageModel} message
  * @param {DialogModel} dialog
+ * @param {UserModel} sender
  */
-const send = function (message, dialog) {
+const send = function (message, dialog, sender) {
     DeviceModel.devicesForUsers(dialog.currentUsers).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
-            sendMessageToDevice(message, device, MessageNamespace.DialogNamespace);
+            sendMessageToDevice(message, device, MessageNamespace.DialogNamespace, dialog, sender);
         });
     });
 };
@@ -153,12 +167,12 @@ const send = function (message, dialog) {
  * @memberof module:Socket
  *
  * @param {MessageModel} message
- * @param {UserModel} user
+ * @param {UserModel} sender
  */
-const sendServerMessageToUser = function (message, user) {
-    DeviceModel.devicesForUsers([user]).then(function (devices) {
+const sendServerMessageToUser = function (message, sender) {
+    DeviceModel.devicesForUsers([sender]).then(function (devices) {
         DeviceModel.iterateDevices(devices, function (key, device) {
-            sendMessageToDevice(message, device, MessageNamespace.ServerNamespace);
+            sendMessageToDevice(message, device, MessageNamespace.ServerNamespace, null, sender);
         });
     });
 };

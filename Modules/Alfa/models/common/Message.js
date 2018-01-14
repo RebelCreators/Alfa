@@ -51,6 +51,13 @@ const MessageSchema = new Schema({
      * @memberof module:models/MessageModel~MessageModel
      * @instance
      *
+     * @type {string}
+     */
+    pushConfig: String,
+    /**
+     * @memberof module:models/MessageModel~MessageModel
+     * @instance
+     *
      * @default Date.now
      *
      * @type {Date}
@@ -162,8 +169,8 @@ MessageSchema.statics.messages = function (date, offset, limit, asc, dialogId) {
  * @param {Date} fromDate
  * @param {date} toDate
  * @param {boolean} asc
- * @param {string} dialogIds
- * @return {Promise.<MEssageModel, Error>}
+ * @param {Array.<string>} dialogIds
+ * @return {Promise.<Array.<MessageModel>, Error>}
  */
 MessageSchema.statics.messagesBetweenDates = function (fromDate, toDate, asc, dialogIds) {
     return new Promise(function (resolve, reject) {
@@ -181,6 +188,7 @@ MessageSchema.statics.messagesBetweenDates = function (fromDate, toDate, asc, di
         });
     });
 };
+
 
 mongoose.model('MessageModel', MessageSchema);
 
