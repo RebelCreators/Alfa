@@ -14,7 +14,7 @@ const logger = afimport.require("logger");
  */
 const optionsDefaults = {
     catch404: true
-}
+};
 const execute = function (express, afimportModule, options) {
     afimport.provide(express, "express");
     const app = express();
