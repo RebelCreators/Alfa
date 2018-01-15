@@ -18,8 +18,8 @@ const router = afimport.require("ExpressRouter", {
  * @param {{namespace: ?string, subpath: ?string, version: ?string, router: ?Router}} options
  */
 function resolve(filePattern, options) {
-    const router = options.router || defaultOptions.router;
     var options = options || defaultOptions;
+    const router = options.router || defaultOptions.router;
     if (!options.namespace) {
         options.namespace = defaultOptions.namespace;
     }
